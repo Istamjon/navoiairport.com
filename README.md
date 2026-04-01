@@ -1,69 +1,84 @@
-# Navoi International Airport Website (NIA) - Docker Environment
+# Navoi International Airport Rasmiy Veb-sayti (NIA) - Docker Muhiti
 
-This repository contains the containerized version of the Navoi International Airport website built with **Payload CMS 3** and **Next.js 15**.
+Ushbu loyiha **Payload CMS 3** va **Next.js 15** texnologiyalari asosida qurilgan Navoi Xalqaro Aeroportining rasmiy veb-saytidir. Ushbu repo loyihani Docker konteynerlarida to'liq professional tarzda ishga tushirish uchun mo'ljallangan.
 
-## 🚀 Quick Start (Docker)
+---
 
-To run the entire stack (Payload CMS + PostgreSQL Database) on your local machine, follow these steps:
+## 🚀 Tizimni Ishga Tushirish (Qadam-baqadam)
 
-### 1. Prerequisites
-- [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed and running.
-- [Git](https://git-scm.com/) installed.
+Loyihani o'z kompyuteringizda (kod yozmasdan, faqat Docker orqali) ishga tushirish uchun quyidagi ko'rsatmalarga amal qiling:
 
-### 2. Setup Environment Variables
-Create a `.env` file in the root directory and add the following variables:
-```env
-DATABASE_URL=postgres://postgres:password@db:5432/final
-PAYLOAD_SECRET=your_payload_secret_here
-NEXT_PUBLIC_SERVER_URL=http://localhost:3000
+### 1-qadam: Zaruriy dasturlar
+Kompyuteringizda quyidagi dasturlar o'rnatilgan bo'lishi shart:
+- **Docker Desktop** (ishga tushirilgan bo'lishi kerak).
+- **Git** (kodlarni yuklab olish uchun).
+
+### 2-qadam: Loyihani yuklab olish
+Terminalda (CMD yoki PowerShell) quyidagi buyruqni bering:
+```bash
+git clone https://github.com/Istamjon/navoiairport.com.git
+cd navoiairport.com
 ```
 
-### 3. Start the Containers
-Run the following command in your terminal:
+### 3-qadam: Muhit o'zgaruvchilarini sozlash (.env)
+Loyiha ildiz papkasida (root) yangi `.env` faylini yarating va unga quyidagi kodni nusxalab qo'ying:
+```env
+DATABASE_URL=postgres://postgres:password@db:5432/final
+PAYLOAD_SECRET=ecce34137f3d0597a6e70f6b
+NEXT_PUBLIC_SERVER_URL=http://localhost:3000
+```
+*(Eslatma: `PAYLOAD_SECRET` xavfsizlik uchun faoliyat davomida o'zgartirilishi mumkin).*
+
+### 4-qadam: Docker konteynerlarini ko'tarish
+Terminalda quyidagi buyruqni bering:
 ```bash
 docker compose up -d
 ```
-This will:
-- Start a **PostgreSQL 17** database container.
-- **Automatically Restore** the database from `final.sql` (using the `init-db.sh` script).
-- Build and start the **Payload CMS** application.
-- Mount your local `public/media` folder so all images are visible.
+Ushbu buyruq bajarilganda:
+1. **PostgreSQL 17** bazasi avtomatik yaratiladi.
+2. **`init-db.sh`** skripti ishga tushib, `final.sql` (PGDMP) faylini bazaga import qiladi.
+3. **Payload CMS** ilovasi build qilinadi va ishga tushadi.
+4. **`public/media`** papkasi bog'lanadi (rasmlar ko'rinishi uchun).
 
-### 4. Access the Application
-- **Website/Frontend**: [http://localhost:3000](http://localhost:3000)
+### 5-qadam: Saytni tekshirish
+Hammasi tayyor bo'lgach, brauzeringizda quyidagi manzillarni oching:
+- **Veb-sayt (Frontend)**: [http://localhost:3000](http://localhost:3000)
 - **Admin Panel**: [http://localhost:3000/admin](http://localhost:3000/admin)
 
 ---
 
-## 🛠️ Project Structure & Configuration
+## 🛠️ Texnik Ma'lumotlar va Imkoniyatlar
 
-### 📦 Database Restoration
-The database is restored from `final.sql`. 
-- **Important**: `final.sql` is a PostgreSQL Custom-Format Dump (`PGDMP`).
-- Standard `psql` cannot read it. Instead, the `init-db.sh` script uses `pg_restore` to import the data into the `final` database during the first startup.
+### 📦 Ma'lumotlar Bazasini Import Qilish
+Sizning `final.sql` faylingiz oddiy SQL emas, balki **Binary Format (PGDMP)** hisoblanadi. Biz uni tiklash uchun maxsus `init-db.sh` skriptidan foyalandik. Bu skript bazaga ulanib, barcha jadval va ma'lumotlarni (`pg_restore` yordamida) to'liq tiklaydi.
 
-### 🖼️ Media Files
-Images are stored in `public/media`. 
-- In Docker, this folder is **bind-mounted** from your host machine to the container.
-- This ensures that any images you have locally are immediately available in the CMS and on the website.
+### 🖼️ Media Fayllar (Rasmlar)
+Rasmlar yo'qolib qolmasligi uchun loyihada **Bind Mount** usuli qo'llanilgan. Ya'ni, sizning kompyuteringizdagi `public/media` papkasi konteyner ichidagi media papkasi bilan to'g'ridan-to'g'ri bog'langan. Rasmlarni qo'shsangiz yoki o'chirsangiz, o'zgarishlar darhol saytda aks etadi.
 
-### 🔧 Build Process
-The `Dockerfile` is optimized for Payload 3 and Next.js 15.
-- It uses `pnpm` as the package manager.
-- Static generation (`generateStaticParams`) is wrapped in `try-catch` blocks to ensure the build succeeds even if the database is not reachable during the image creation phase.
+### ⚡ Build Optimizatsiyasi
+Docker build jarayoni Next.js 15 standalone rejimida ishlaydi. Bazaga ulanish build vaqtida imkonsiz bo'lganligi sababli, `generateStaticParams` funksiyalari `try-catch` bilan himoyalangan, bu esa build'ni uzluksiz yakunlashga yordam beradi.
 
 ---
 
-## 📖 Useful Commands
+## 📖 Tezkor Docker Buyruqlari
 
-| Action | Command |
+| Vazifa | Buyruq |
 | :--- | :--- |
-| **Start everything** | `docker compose up -d` |
-| **Stop everything** | `docker compose down` |
-| **View logs** | `docker compose logs -f payload` |
-| **View DB logs** | `docker compose logs -f db` |
-| **Rebuild application** | `docker compose build --no-cache` |
-| **Reset Database** | `docker compose down -v` (Warning: deletes DB data) followed by `docker compose up -d` |
+| **Tizimni ishga tushirish** | `docker compose up -d` |
+| **Tizimni to'xtatish** | `docker compose down` |
+| **Sayt loglarini ko'rish** | `docker compose logs -f payload` |
+| **Baza loglarini ko'rish** | `docker compose logs -f db` |
+| **Ilovani qayta build qilish** | `docker compose build --no-cache` |
+| **Bazani butunlay tozalash** | `docker compose down -v` |
 
-## 🤝 Support
-If you have any issues with the Docker setup, please check the container logs using `docker logs final-payload-1`.
+---
+
+## 🆘 Muammolarni Hal Qilish (Troubleshooting)
+
+Agarda rasmlar ko'rinmasa yoki sayt ochilmasa:
+1. Docker Desktop ishlayotganiga ishonch hosil qiling.
+2. `docker compose logs -f payload` buyrug'i orqali xatolarni tekshiring.
+3. `.env` faylidagi `DATABASE_URL` xatolarsiz yozilganligini tekshiring.
+
+---
+*Loyiha Istamjon / Navoiairport.com jamoasi uchun maxsus tayyorlandi.*
