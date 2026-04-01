@@ -16,6 +16,21 @@ const dirname = path.dirname(filename)
 
 export const Media: CollectionConfig = {
   slug: 'media',
+  // 🔹 KOLLEKSIYA NOMLARI TARJIMASI
+  labels: {
+    singular: {
+      en: 'Media',
+      ru: 'Медиа',
+      uz: 'Media',
+      zh: '媒体',
+    },
+    plural: {
+      en: 'Media Files',
+      ru: 'Медиафайлы',
+      uz: 'Media fayllar',
+      zh: '媒体文件',
+    },
+  },
   folders: true,
   access: {
     create: authenticated,
@@ -28,6 +43,14 @@ export const Media: CollectionConfig = {
       name: 'alt',
       type: 'text',
       //required: true,
+      // 🔹 ALT MAYDONI TARJIMALARI
+      label: {
+        en: 'Alt Text',
+        ru: 'Альтернативный текст',
+        uz: 'Muqobil matn (Alt)',
+        zh: '替代文本',
+      },
+      localized: true,
     },
     {
       name: 'caption',
@@ -37,6 +60,7 @@ export const Media: CollectionConfig = {
           return [...rootFeatures, FixedToolbarFeature(), InlineToolbarFeature()]
         },
       }),
+      localized: true,
     },
   ],
   upload: {

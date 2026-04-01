@@ -1,9 +1,11 @@
 import { postgresAdapter } from '@payloadcms/db-postgres'
+import { nodemailerAdapter } from '@payloadcms/email-nodemailer'
 import sharp from 'sharp'
 import path from 'path'
 import { buildConfig, PayloadRequest } from 'payload'
 import { fileURLToPath } from 'url'
-
+import { ru } from '@payloadcms/translations/languages/ru'
+import { en } from '@payloadcms/translations/languages/en'
 import { Categories } from './collections/Categories'
 import { Media } from './collections/Media'
 import { Pages } from './collections/Pages'
@@ -19,6 +21,74 @@ const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
 export default buildConfig({
+  i18n: {
+    supportedLanguages: { en, ru },
+    fallbackLanguage: 'ru',
+    translations: {
+      en: {
+        'plugin-redirects': {
+          fromUrl: 'From URL',
+          toUrlType: 'To URL Type',
+          internalLink: 'Internal Link',
+          customUrl: 'Custom URL',
+          documentToRedirect: 'Document To Redirect',
+          customUrlLabel: 'Custom URL',
+        },
+        'plugin-seo': {
+          meta: 'SEO',
+          title: 'Meta Title',
+          description: 'Meta Description',
+          image: 'Meta Image',
+          overview: 'Overview',
+          preview: 'Preview',
+        },
+        'plugin-form-builder': {
+          form: 'Form',
+          forms: 'Forms',
+          submissions: 'Submissions',
+          confirmationMessage: 'Confirmation Message',
+        },
+      },
+      ru: {
+        'plugin-redirects': {
+          fromUrl: 'Исходный URL',
+          toUrlType: 'Тип целевого URL',
+          internalLink: 'Внутренняя ссылка',
+          customUrl: 'Пользовательский URL',
+          documentToRedirect: 'Документ для перенаправления',
+          customUrlLabel: 'Пользовательский URL',
+        },
+        'plugin-seo': {
+          meta: 'SEO',
+          title: 'Мета-заголовок',
+          description: 'Мета-описание',
+          image: 'Мета-изображение',
+          overview: 'Обзор',
+          preview: 'Предпросмотр',
+        },
+        'plugin-form-builder': {
+          form: 'Форма',
+          forms: 'Формы',
+          submissions: 'Отправки',
+          confirmationMessage: 'Сообщение о подтверждении',
+        },
+      },
+    },
+  },
+
+  experimental: { localizeStatus: true },
+
+  localization: {
+    locales: [
+      { code: 'uz', label: "O'zbek" },
+      { code: 'ru', label: 'Русский' },
+      { code: 'en', label: 'English' },
+      { code: 'zh', label: '中文', rtl: false },
+    ],
+    defaultLocale: 'uz',
+    fallback: true,
+  },
+
   admin: {
     components: {
       // The `BeforeLogin` component renders a message that you see while logging into your admin panel.
@@ -26,8 +96,18 @@ export default buildConfig({
       beforeLogin: ['@/components/BeforeLogin'],
       // The `BeforeDashboard` component renders the 'welcome' block that you see after logging into your admin panel.
       // Feel free to delete this at any time. Simply remove the line below.
-      beforeDashboard: ['@/components/BeforeDashboard'],
+      // beforeDashboard: ['@/components/BeforeDashboard'],
     },
+    timezones: {
+      supportedTimezones: [
+        {
+          label: 'UTC+5',
+          value: 'Asia/Tashkent',
+        },
+      ],
+      defaultTimezone: 'Asia/Tashkent',
+    },
+
     importMap: {
       baseDir: path.resolve(dirname),
     },
@@ -65,7 +145,15 @@ export default buildConfig({
   collections: [Pages, Posts, Media, Categories, Users],
   cors: [getServerSideURL()].filter(Boolean),
   globals: [Header, Footer],
+  email: nodemailerAdapter({
+    defaultFromAddress: 'info@navoiyairport.uz',
+    defaultFromName: 'Navoi Airport Admin',
+    transportOptions: {
+      streamTransport: true,
+    },
+  }),
   plugins,
+
   secret: process.env.PAYLOAD_SECRET,
   sharp,
   typescript: {

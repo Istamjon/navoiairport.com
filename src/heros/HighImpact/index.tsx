@@ -3,17 +3,21 @@ import { useHeaderTheme } from '@/providers/HeaderTheme'
 import React, { useEffect } from 'react'
 
 import type { Page } from '@/payload-types'
+import type { BreadcrumbItem } from '@/utilities/generateBreadcrumbs'
 
 import { CMSLink } from '@/components/Link'
 import { Media } from '@/components/Media'
 import RichText from '@/components/RichText'
+import { Breadcrumb } from '@/components/Breadcrumb'
 
-export const HighImpactHero: React.FC<Page['hero']> = ({ links, media, richText }) => {
+const HighImpactHeroComponent: React.FC<
+  Page['hero'] & { breadcrumbs?: BreadcrumbItem[]; locale?: string }
+> = ({ links, media, richText, breadcrumbs, locale }) => {
   const { setHeaderTheme } = useHeaderTheme()
 
   useEffect(() => {
     setHeaderTheme('dark')
-  })
+  }, [setHeaderTheme])
 
   return (
     <div
@@ -22,6 +26,7 @@ export const HighImpactHero: React.FC<Page['hero']> = ({ links, media, richText 
     >
       <div className="container mb-8 z-10 relative flex items-center justify-center">
         <div className="max-w-[36.5rem] md:text-center">
+          <Breadcrumb items={breadcrumbs} locale={locale} />
           {richText && <RichText className="mb-6" data={richText} enableGutter={false} />}
           {Array.isArray(links) && links.length > 0 && (
             <ul className="flex md:justify-center gap-4">
@@ -44,3 +49,6 @@ export const HighImpactHero: React.FC<Page['hero']> = ({ links, media, richText 
     </div>
   )
 }
+
+// Memoize to prevent unnecessary re-renders
+export const HighImpactHero = React.memo(HighImpactHeroComponent)

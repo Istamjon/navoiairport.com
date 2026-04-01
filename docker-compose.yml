@@ -1,31 +1,43 @@
-version: '3'
+version: '3.8'
 
 services:
   payload:
-    image: node:18-alpine
+    build:
+      context: .
+      dockerfile: Dockerfile
     ports:
       - '3000:3000'
-    volumes:
-      - .:/home/node/app
-      - node_modules:/home/node/app/node_modules
-    working_dir: /home/node/app/
-    command: sh -c "yarn install && yarn dev"
     depends_on:
-      - mongo
-    env_file:
-      - .env
-
-  mongo:
-    image: mongo:latest
-    ports:
-      - '27017:27017'
-    command:
-      - --storageEngine=wiredTiger
+      db:
+        condition: service_healthy
+    environment:
+      - DATABASE_URL=postgres://postgres:password@db:5432/final
+      - PAYLOAD_SECRET=${PAYLOAD_SECRET:-ecce34137f3d0597a6e70f6b}
+      - NEXT_PUBLIC_SERVER_URL=${NEXT_PUBLIC_SERVER_URL:-http://localhost:3000}
+      - SHARP_IGNORE_GLOBAL_LIBVIPS=1
     volumes:
-      - data:/data/db
-    logging:
-      driver: none
+      - ./public/media:/app/public/media
+    restart: always
+
+  db:
+    image: postgres:17-alpine
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=final
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-db.sh:/docker-entrypoint-initdb.d/init-db.sh
+      - ./final.sql:/tmp/final.dump
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
 volumes:
-  data:
-  node_modules:
+  postgres_data:
+  media_data:

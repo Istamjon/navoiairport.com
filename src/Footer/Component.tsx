@@ -1,33 +1,37 @@
-import { getCachedGlobal } from '@/utilities/getGlobals'
+import { getLocalizedGlobal } from '@/utilities/getGlobals'
 import Link from 'next/link'
 import React from 'react'
-
-import type { Footer } from '@/payload-types'
-
+import type { Header } from '@/payload-types'
 import { ThemeSelector } from '@/providers/Theme/ThemeSelector'
-import { CMSLink } from '@/components/Link'
 import { Logo } from '@/components/Logo/Logo'
+import { FooterNavItem } from './FooterNavItem'
 
 export async function Footer() {
-  const footerData: Footer = await getCachedGlobal('footer', 1)()
+  const headerData: Header = await getLocalizedGlobal('header', 2)
 
-  const navItems = footerData?.navItems || []
+  const navItems = headerData?.navItems || []
 
   return (
-    <footer className="mt-auto border-t border-border bg-black dark:bg-card text-white">
-      <div className="container py-8 gap-8 flex flex-col md:flex-row md:justify-between">
-        <Link className="flex items-center" href="/">
-          <Logo />
-        </Link>
-
-        <div className="flex flex-col-reverse items-start md:flex-row gap-4 md:items-center">
-          <ThemeSelector />
-          <nav className="flex flex-col md:flex-row gap-4">
-            {navItems.map(({ link }, i) => {
-              return <CMSLink className="text-white" key={i} {...link} />
-            })}
-          </nav>
+    <footer className="mt-auto border-t-2 border-blue-300 bg-primary text-white">
+      <div className="container py-8">
+        <div className="flex flex-col md:flex-row md:justify-between gap-8 mb-8">
+          <Link className="flex items-center" href="/">
+            {/* <Logo /> */}
+          </Link>
+          {/* <ThemeSelector /> */}
         </div>
+
+        <nav className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8 divide-x divide-white/20">
+          {navItems.map((navItem, i) => (
+            <FooterNavItem key={i} navItem={navItem} />
+          ))}
+        </nav>
+      </div>
+
+      <div className="container border-t border-t-blue-300/50 py-4">
+        <p className="text-left text-white/50 text-sm">
+          Navoi International Airopot Inc. &copy; {new Date().getFullYear()}
+        </p>
       </div>
     </footer>
   )

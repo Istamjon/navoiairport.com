@@ -45,7 +45,7 @@ const placeholderBlur =
  * remotePatterns for optimization. Only add `loader` if using external CDNs with custom transforms.
  */
 
-export const ImageMedia: React.FC<MediaProps> = (props) => {
+const ImageMediaComponent: React.FC<MediaProps> = (props) => {
   const {
     alt: altFromProps,
     fill,
@@ -103,3 +103,6 @@ export const ImageMedia: React.FC<MediaProps> = (props) => {
     </picture>
   )
 }
+
+// Memoize to prevent unnecessary re-renders
+export const ImageMedia = React.memo(ImageMediaComponent)

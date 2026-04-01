@@ -12,58 +12,12 @@
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "supportedTimezones".
  */
-export type SupportedTimezones =
-  | 'Pacific/Midway'
-  | 'Pacific/Niue'
-  | 'Pacific/Honolulu'
-  | 'Pacific/Rarotonga'
-  | 'America/Anchorage'
-  | 'Pacific/Gambier'
-  | 'America/Los_Angeles'
-  | 'America/Tijuana'
-  | 'America/Denver'
-  | 'America/Phoenix'
-  | 'America/Chicago'
-  | 'America/Guatemala'
-  | 'America/New_York'
-  | 'America/Bogota'
-  | 'America/Caracas'
-  | 'America/Santiago'
-  | 'America/Buenos_Aires'
-  | 'America/Sao_Paulo'
-  | 'Atlantic/South_Georgia'
-  | 'Atlantic/Azores'
-  | 'Atlantic/Cape_Verde'
-  | 'Europe/London'
-  | 'Europe/Berlin'
-  | 'Africa/Lagos'
-  | 'Europe/Athens'
-  | 'Africa/Cairo'
-  | 'Europe/Moscow'
-  | 'Asia/Riyadh'
-  | 'Asia/Dubai'
-  | 'Asia/Baku'
-  | 'Asia/Karachi'
-  | 'Asia/Tashkent'
-  | 'Asia/Calcutta'
-  | 'Asia/Dhaka'
-  | 'Asia/Almaty'
-  | 'Asia/Jakarta'
-  | 'Asia/Bangkok'
-  | 'Asia/Shanghai'
-  | 'Asia/Singapore'
-  | 'Asia/Tokyo'
-  | 'Asia/Seoul'
-  | 'Australia/Brisbane'
-  | 'Australia/Sydney'
-  | 'Pacific/Guam'
-  | 'Pacific/Noumea'
-  | 'Pacific/Auckland'
-  | 'Pacific/Fiji';
+export type SupportedTimezones = 'Asia/Tashkent';
 
 export interface Config {
   auth: {
     users: UserAuthOperations;
+    'payload-mcp-api-keys': PayloadMcpApiKeyAuthOperations;
   };
   blocks: {};
   collections: {
@@ -76,6 +30,7 @@ export interface Config {
     forms: Form;
     'form-submissions': FormSubmission;
     search: Search;
+    'payload-mcp-api-keys': PayloadMcpApiKey;
     'payload-kv': PayloadKv;
     'payload-jobs': PayloadJob;
     'payload-folders': FolderInterface;
@@ -98,6 +53,7 @@ export interface Config {
     forms: FormsSelect<false> | FormsSelect<true>;
     'form-submissions': FormSubmissionsSelect<false> | FormSubmissionsSelect<true>;
     search: SearchSelect<false> | SearchSelect<true>;
+    'payload-mcp-api-keys': PayloadMcpApiKeysSelect<false> | PayloadMcpApiKeysSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-jobs': PayloadJobsSelect<false> | PayloadJobsSelect<true>;
     'payload-folders': PayloadFoldersSelect<false> | PayloadFoldersSelect<true>;
@@ -106,9 +62,14 @@ export interface Config {
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
   };
   db: {
-    defaultIDType: string;
+    defaultIDType: number;
   };
-  fallbackLocale: null;
+  fallbackLocale:
+    | ('false' | 'none' | 'null')
+    | false
+    | null
+    | ('uz' | 'ru' | 'en' | 'zh')
+    | ('uz' | 'ru' | 'en' | 'zh')[];
   globals: {
     header: Header;
     footer: Footer;
@@ -117,8 +78,11 @@ export interface Config {
     header: HeaderSelect<false> | HeaderSelect<true>;
     footer: FooterSelect<false> | FooterSelect<true>;
   };
-  locale: null;
-  user: User;
+  locale: 'uz' | 'ru' | 'en' | 'zh';
+  widgets: {
+    collections: CollectionsWidget;
+  };
+  user: User | PayloadMcpApiKey;
   jobs: {
     tasks: {
       schedulePublish: TaskSchedulePublish;
@@ -148,15 +112,38 @@ export interface UserAuthOperations {
     password: string;
   };
 }
+export interface PayloadMcpApiKeyAuthOperations {
+  forgotPassword: {
+    email: string;
+    password: string;
+  };
+  login: {
+    email: string;
+    password: string;
+  };
+  registerFirstUser: {
+    email: string;
+    password: string;
+  };
+  unlock: {
+    email: string;
+    password: string;
+  };
+}
 /**
+ * Manage website pages
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "pages".
  */
 export interface Page {
-  id: string;
+  id: number;
+  /**
+   * The main title of your page
+   */
   title: string;
   hero: {
-    type: 'none' | 'highImpact' | 'mediumImpact' | 'lowImpact';
+    type: 'none' | 'highImpact' | 'mediumImpact' | 'lowImpact' | 'nia';
     richText?: {
       root: {
         type: string;
@@ -180,11 +167,11 @@ export interface Page {
             reference?:
               | ({
                   relationTo: 'pages';
-                  value: string | Page;
+                  value: number | Page;
                 } | null)
               | ({
                   relationTo: 'posts';
-                  value: string | Post;
+                  value: number | Post;
                 } | null);
             url?: string | null;
             label: string;
@@ -196,35 +183,110 @@ export interface Page {
           id?: string | null;
         }[]
       | null;
-    media?: (string | null) | Media;
+    media?: (number | null) | Media;
+    backgroundType?: ('images' | 'video') | null;
+    /**
+     * Upload multiple images for background slideshow (recommended: 3-5 images)
+     */
+    slideshowImages?: (number | Media)[] | null;
+    /**
+     * Enter YouTube video URL or ID (e.g., https://www.youtube.com/watch?v=VIDEO_ID or just VIDEO_ID)
+     */
+    youtubeVideoUrl?: string | null;
+    departureTab?: string | null;
+    arrivalTab?: string | null;
+    destinationLabel?: string | null;
+    originLabel?: string | null;
+    destinationPlaceholder?: string | null;
+    dateLabel?: string | null;
+    searchButton?: string | null;
   };
-  layout: (CallToActionBlock | ContentBlock | MediaBlock | ArchiveBlock | FormBlock)[];
+  /**
+   * Add content blocks to build your page
+   */
+  layout: (
+    | CallToActionBlock
+    | ContentBlock
+    | {
+        media: number | Media;
+        id?: string | null;
+        blockName?: string | null;
+        blockType: 'mediaBlock';
+      }
+    | ArchiveBlock
+    | FormBlock
+    | FlightsTableBlock
+    | CarouselBlock
+    | LatestNewsBlock
+    | InfoCardsBlock
+    | {
+        /**
+         * Fon rangini tanlang
+         */
+        backgroundColor?: ('white' | 'gray') | null;
+        /**
+         * Animation speed in seconds (default: 30)
+         */
+        speed?: number | null;
+        logos: {
+          logo: number | Media;
+          /**
+           * Optional URL for the logo link
+           */
+          link?: string | null;
+          id?: string | null;
+        }[];
+        id?: string | null;
+        blockName?: string | null;
+        blockType: 'logoCarousel';
+      }
+  )[];
   meta?: {
     title?: string | null;
     /**
      * Maximum upload file size: 12MB. Recommended file size for images is <500KB.
      */
-    image?: (string | null) | Media;
+    image?: (number | null) | Media;
     description?: string | null;
   };
+  /**
+   * Date and time when the page was/will be published
+   */
   publishedAt?: string | null;
   /**
    * When enabled, the slug will auto-generate from the title field on save and autosave.
    */
   generateSlug?: boolean | null;
   slug: string;
+  parent?: (number | null) | Page;
+  breadcrumbs?:
+    | {
+        doc?: (number | null) | Page;
+        url?: string | null;
+        label?: string | null;
+        id?: string | null;
+      }[]
+    | null;
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
 }
 /**
+ * Manage blog posts and articles
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "posts".
  */
 export interface Post {
-  id: string;
+  id: number;
+  /**
+   * The main title of your post
+   */
   title: string;
-  heroImage?: (string | null) | Media;
+  /**
+   * Featured image displayed at the top of the post
+   */
+  heroImage?: (number | null) | Media;
   content: {
     root: {
       type: string;
@@ -240,18 +302,18 @@ export interface Post {
     };
     [k: string]: unknown;
   };
-  relatedPosts?: (string | Post)[] | null;
-  categories?: (string | Category)[] | null;
+  relatedPosts?: (number | Post)[] | null;
+  categories?: (number | Category)[] | null;
   meta?: {
     title?: string | null;
     /**
      * Maximum upload file size: 12MB. Recommended file size for images is <500KB.
      */
-    image?: (string | null) | Media;
+    image?: (number | null) | Media;
     description?: string | null;
   };
   publishedAt?: string | null;
-  authors?: (string | User)[] | null;
+  authors?: (number | User)[] | null;
   populatedAuthors?:
     | {
         id?: string | null;
@@ -272,7 +334,7 @@ export interface Post {
  * via the `definition` "media".
  */
 export interface Media {
-  id: string;
+  id: number;
   alt?: string | null;
   caption?: {
     root: {
@@ -289,7 +351,7 @@ export interface Media {
     };
     [k: string]: unknown;
   } | null;
-  folder?: (string | null) | FolderInterface;
+  folder?: (number | null) | FolderInterface;
   updatedAt: string;
   createdAt: string;
   url?: string | null;
@@ -365,18 +427,18 @@ export interface Media {
  * via the `definition` "payload-folders".
  */
 export interface FolderInterface {
-  id: string;
+  id: number;
   name: string;
-  folder?: (string | null) | FolderInterface;
+  folder?: (number | null) | FolderInterface;
   documentsAndFolders?: {
     docs?: (
       | {
           relationTo?: 'payload-folders';
-          value: string | FolderInterface;
+          value: number | FolderInterface;
         }
       | {
           relationTo?: 'media';
-          value: string | Media;
+          value: number | Media;
         }
     )[];
     hasNextPage?: boolean;
@@ -387,21 +449,26 @@ export interface FolderInterface {
   createdAt: string;
 }
 /**
+ * Organize posts and content by categories
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "categories".
  */
 export interface Category {
-  id: string;
+  id: number;
+  /**
+   * The display name for this category
+   */
   title: string;
   /**
    * When enabled, the slug will auto-generate from the title field on save and autosave.
    */
   generateSlug?: boolean | null;
   slug: string;
-  parent?: (string | null) | Category;
+  parent?: (number | null) | Category;
   breadcrumbs?:
     | {
-        doc?: (string | null) | Category;
+        doc?: (number | null) | Category;
         url?: string | null;
         label?: string | null;
         id?: string | null;
@@ -411,14 +478,22 @@ export interface Category {
   createdAt: string;
 }
 /**
+ * Manage user accounts and permissions
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "users".
  */
 export interface User {
-  id: string;
+  id: number;
+  /**
+   * User's full name as displayed in the system
+   */
   name?: string | null;
   updatedAt: string;
   createdAt: string;
+  enableAPIKey?: boolean | null;
+  apiKey?: string | null;
+  apiKeyIndex?: string | null;
   email: string;
   resetPasswordToken?: string | null;
   resetPasswordExpiration?: string | null;
@@ -464,11 +539,11 @@ export interface CallToActionBlock {
           reference?:
             | ({
                 relationTo: 'pages';
-                value: string | Page;
+                value: number | Page;
               } | null)
             | ({
                 relationTo: 'posts';
-                value: string | Post;
+                value: number | Post;
               } | null);
           url?: string | null;
           label: string;
@@ -514,11 +589,11 @@ export interface ContentBlock {
           reference?:
             | ({
                 relationTo: 'pages';
-                value: string | Page;
+                value: number | Page;
               } | null)
             | ({
                 relationTo: 'posts';
-                value: string | Post;
+                value: number | Post;
               } | null);
           url?: string | null;
           label: string;
@@ -533,16 +608,6 @@ export interface ContentBlock {
   id?: string | null;
   blockName?: string | null;
   blockType: 'content';
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "MediaBlock".
- */
-export interface MediaBlock {
-  media: string | Media;
-  id?: string | null;
-  blockName?: string | null;
-  blockType: 'mediaBlock';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -566,12 +631,12 @@ export interface ArchiveBlock {
   } | null;
   populateBy?: ('collection' | 'selection') | null;
   relationTo?: 'posts' | null;
-  categories?: (string | Category)[] | null;
+  categories?: (number | Category)[] | null;
   limit?: number | null;
   selectedDocs?:
     | {
         relationTo: 'posts';
-        value: string | Post;
+        value: number | Post;
       }[]
     | null;
   id?: string | null;
@@ -583,7 +648,7 @@ export interface ArchiveBlock {
  * via the `definition` "FormBlock".
  */
 export interface FormBlock {
-  form: string | Form;
+  form: number | Form;
   enableIntro?: boolean | null;
   introContent?: {
     root: {
@@ -609,7 +674,7 @@ export interface FormBlock {
  * via the `definition` "forms".
  */
 export interface Form {
-  id: string;
+  id: number;
   title: string;
   fields?:
     | (
@@ -780,10 +845,161 @@ export interface Form {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "FlightsTableBlock".
+ */
+export interface FlightsTableBlock {
+  /**
+   * Small text above title (e.g., "LIVE UPDATES")
+   */
+  headline?: string | null;
+  /**
+   * Main heading (e.g., "Flight Schedule")
+   */
+  title: string;
+  /**
+   * Description text below title
+   */
+  subtitle?: string | null;
+  departuresLabel: string;
+  arrivalsLabel: string;
+  tableHeaders: {
+    time: string;
+    destination: string;
+    flight: string;
+    airline: string;
+    terminal: string;
+    gate: string;
+    status: string;
+  };
+  /**
+   * Airport code for Airlabs API (e.g., NVI for Navoi)
+   */
+  airportIata?: string | null;
+  /**
+   * How often to refresh flight data from Airlabs API
+   */
+  refreshInterval?: number | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'flightsTable';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "CarouselBlock".
+ */
+export interface CarouselBlock {
+  /**
+   * Optional background image for the carousel section
+   */
+  backgroundImage?: (number | null) | Media;
+  mainHeading: string;
+  subtitle?: string | null;
+  cards?:
+    | {
+        image: number | Media;
+        title: string;
+        subtitle?: string | null;
+        buttonText?: string | null;
+        buttonLink: string;
+        id?: string | null;
+      }[]
+    | null;
+  allServicesButton?: {
+    text?: string | null;
+    link?: string | null;
+  };
+  settings?: {
+    autoplay?: boolean | null;
+    /**
+     * Delay in milliseconds
+     */
+    autoplayDelay?: number | null;
+    showDots?: boolean | null;
+    showNavigation?: boolean | null;
+  };
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'carousel';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "LatestNewsBlock".
+ */
+export interface LatestNewsBlock {
+  mainHeading: string;
+  subtitle?: string | null;
+  /**
+   * Select category to filter posts
+   */
+  category: number | Category;
+  /**
+   * Maximum number of posts to display
+   */
+  postsLimit?: number | null;
+  /**
+   * Text for "Read More" link on each card
+   */
+  readMoreText?: string | null;
+  allNewsButton?: {
+    text?: string | null;
+    link?: string | null;
+  };
+  settings?: {
+    showNavigation?: boolean | null;
+    showDots?: boolean | null;
+    autoplay?: boolean | null;
+    /**
+     * Delay in milliseconds
+     */
+    autoplayDelay?: number | null;
+  };
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'latestNews';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "InfoCardsBlock".
+ */
+export interface InfoCardsBlock {
+  title: string;
+  subtitle?: string | null;
+  cards?:
+    | {
+        cardTitle: string;
+        cardDescription: string;
+        cardImage: number | Media;
+        /**
+         * Clickable link for the entire card
+         */
+        link?: {
+          type?: ('reference' | 'custom') | null;
+          newTab?: boolean | null;
+          reference?:
+            | ({
+                relationTo: 'pages';
+                value: number | Page;
+              } | null)
+            | ({
+                relationTo: 'posts';
+                value: number | Post;
+              } | null);
+          url?: string | null;
+        };
+        style?: ('default' | 'highlight') | null;
+        id?: string | null;
+      }[]
+    | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'infoCards';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "redirects".
  */
 export interface Redirect {
-  id: string;
+  id: number;
   /**
    * You will need to rebuild the website when changing this field.
    */
@@ -793,11 +1009,11 @@ export interface Redirect {
     reference?:
       | ({
           relationTo: 'pages';
-          value: string | Page;
+          value: number | Page;
         } | null)
       | ({
           relationTo: 'posts';
-          value: string | Post;
+          value: number | Post;
         } | null);
     url?: string | null;
   };
@@ -809,8 +1025,8 @@ export interface Redirect {
  * via the `definition` "form-submissions".
  */
 export interface FormSubmission {
-  id: string;
-  form: string | Form;
+  id: number;
+  form: number | Form;
   submissionData?:
     | {
         field: string;
@@ -828,18 +1044,23 @@ export interface FormSubmission {
  * via the `definition` "search".
  */
 export interface Search {
-  id: string;
+  id: number;
   title?: string | null;
   priority?: number | null;
-  doc: {
-    relationTo: 'posts';
-    value: string | Post;
-  };
+  doc:
+    | {
+        relationTo: 'posts';
+        value: number | Post;
+      }
+    | {
+        relationTo: 'pages';
+        value: number | Page;
+      };
   slug?: string | null;
   meta?: {
     title?: string | null;
     description?: string | null;
-    image?: (string | null) | Media;
+    image?: (number | null) | Media;
   };
   categories?:
     | {
@@ -853,11 +1074,310 @@ export interface Search {
   createdAt: string;
 }
 /**
+ * API keys control which collections, resources, tools, and prompts MCP clients can access
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-mcp-api-keys".
+ */
+export interface PayloadMcpApiKey {
+  id: number;
+  /**
+   * The user that the API key is associated with.
+   */
+  user: number | User;
+  /**
+   * A useful label for the API key.
+   */
+  label?: string | null;
+  /**
+   * The purpose of the API key.
+   */
+  description?: string | null;
+  categories?: {
+    /**
+     * Allow clients to find categories.
+     */
+    find?: boolean | null;
+    /**
+     * Allow clients to create categories.
+     */
+    create?: boolean | null;
+    /**
+     * Allow clients to update categories.
+     */
+    update?: boolean | null;
+    /**
+     * Allow clients to delete categories.
+     */
+    delete?: boolean | null;
+  };
+  pages?: {
+    /**
+     * Allow clients to find pages.
+     */
+    find?: boolean | null;
+    /**
+     * Allow clients to create pages.
+     */
+    create?: boolean | null;
+    /**
+     * Allow clients to update pages.
+     */
+    update?: boolean | null;
+    /**
+     * Allow clients to delete pages.
+     */
+    delete?: boolean | null;
+  };
+  posts?: {
+    /**
+     * Allow clients to find posts.
+     */
+    find?: boolean | null;
+    /**
+     * Allow clients to create posts.
+     */
+    create?: boolean | null;
+    /**
+     * Allow clients to update posts.
+     */
+    update?: boolean | null;
+    /**
+     * Allow clients to delete posts.
+     */
+    delete?: boolean | null;
+  };
+  media?: {
+    /**
+     * Allow clients to find media.
+     */
+    find?: boolean | null;
+    /**
+     * Allow clients to create media.
+     */
+    create?: boolean | null;
+    /**
+     * Allow clients to update media.
+     */
+    update?: boolean | null;
+    /**
+     * Allow clients to delete media.
+     */
+    delete?: boolean | null;
+  };
+  users?: {
+    /**
+     * Allow clients to find users.
+     */
+    find?: boolean | null;
+    /**
+     * Allow clients to create users.
+     */
+    create?: boolean | null;
+    /**
+     * Allow clients to update users.
+     */
+    update?: boolean | null;
+    /**
+     * Allow clients to delete users.
+     */
+    delete?: boolean | null;
+  };
+  redirects?: {
+    /**
+     * Allow clients to find redirects.
+     */
+    find?: boolean | null;
+    /**
+     * Allow clients to create redirects.
+     */
+    create?: boolean | null;
+    /**
+     * Allow clients to update redirects.
+     */
+    update?: boolean | null;
+    /**
+     * Allow clients to delete redirects.
+     */
+    delete?: boolean | null;
+  };
+  forms?: {
+    /**
+     * Allow clients to find forms.
+     */
+    find?: boolean | null;
+    /**
+     * Allow clients to create forms.
+     */
+    create?: boolean | null;
+    /**
+     * Allow clients to update forms.
+     */
+    update?: boolean | null;
+    /**
+     * Allow clients to delete forms.
+     */
+    delete?: boolean | null;
+  };
+  formSubmissions?: {
+    /**
+     * Allow clients to find form-submissions.
+     */
+    find?: boolean | null;
+    /**
+     * Allow clients to create form-submissions.
+     */
+    create?: boolean | null;
+    /**
+     * Allow clients to update form-submissions.
+     */
+    update?: boolean | null;
+    /**
+     * Allow clients to delete form-submissions.
+     */
+    delete?: boolean | null;
+  };
+  search?: {
+    /**
+     * Allow clients to find search.
+     */
+    find?: boolean | null;
+    /**
+     * Allow clients to create search.
+     */
+    create?: boolean | null;
+    /**
+     * Allow clients to update search.
+     */
+    update?: boolean | null;
+    /**
+     * Allow clients to delete search.
+     */
+    delete?: boolean | null;
+  };
+  payloadFolders?: {
+    /**
+     * Allow clients to find payload-folders.
+     */
+    find?: boolean | null;
+    /**
+     * Allow clients to create payload-folders.
+     */
+    create?: boolean | null;
+    /**
+     * Allow clients to update payload-folders.
+     */
+    update?: boolean | null;
+    /**
+     * Allow clients to delete payload-folders.
+     */
+    delete?: boolean | null;
+  };
+  payloadMcpApiKeys?: {
+    /**
+     * Allow clients to find payload-mcp-api-keys.
+     */
+    find?: boolean | null;
+    /**
+     * Allow clients to create payload-mcp-api-keys.
+     */
+    create?: boolean | null;
+    /**
+     * Allow clients to update payload-mcp-api-keys.
+     */
+    update?: boolean | null;
+    /**
+     * Allow clients to delete payload-mcp-api-keys.
+     */
+    delete?: boolean | null;
+  };
+  payloadKv?: {
+    /**
+     * Allow clients to find payload-kv.
+     */
+    find?: boolean | null;
+    /**
+     * Allow clients to create payload-kv.
+     */
+    create?: boolean | null;
+    /**
+     * Allow clients to update payload-kv.
+     */
+    update?: boolean | null;
+    /**
+     * Allow clients to delete payload-kv.
+     */
+    delete?: boolean | null;
+  };
+  payloadJobs?: {
+    /**
+     * Allow clients to find payload-jobs.
+     */
+    find?: boolean | null;
+    /**
+     * Allow clients to create payload-jobs.
+     */
+    create?: boolean | null;
+    /**
+     * Allow clients to update payload-jobs.
+     */
+    update?: boolean | null;
+    /**
+     * Allow clients to delete payload-jobs.
+     */
+    delete?: boolean | null;
+  };
+  payloadLockedDocuments?: {
+    /**
+     * Allow clients to find payload-locked-documents.
+     */
+    find?: boolean | null;
+    /**
+     * Allow clients to create payload-locked-documents.
+     */
+    create?: boolean | null;
+    /**
+     * Allow clients to update payload-locked-documents.
+     */
+    update?: boolean | null;
+    /**
+     * Allow clients to delete payload-locked-documents.
+     */
+    delete?: boolean | null;
+  };
+  footer?: {
+    /**
+     * Allow clients to find footer global.
+     */
+    find?: boolean | null;
+    /**
+     * Allow clients to update footer global.
+     */
+    update?: boolean | null;
+  };
+  header?: {
+    /**
+     * Allow clients to find header global.
+     */
+    find?: boolean | null;
+    /**
+     * Allow clients to update header global.
+     */
+    update?: boolean | null;
+  };
+  updatedAt: string;
+  createdAt: string;
+  enableAPIKey?: boolean | null;
+  apiKey?: string | null;
+  apiKeyIndex?: string | null;
+  collection: 'payload-mcp-api-keys';
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
-  id: string;
+  id: number;
   key: string;
   data:
     | {
@@ -874,7 +1394,7 @@ export interface PayloadKv {
  * via the `definition` "payload-jobs".
  */
 export interface PayloadJob {
-  id: string;
+  id: number;
   /**
    * Input data provided to the job
    */
@@ -966,53 +1486,62 @@ export interface PayloadJob {
  * via the `definition` "payload-locked-documents".
  */
 export interface PayloadLockedDocument {
-  id: string;
+  id: number;
   document?:
     | ({
         relationTo: 'pages';
-        value: string | Page;
+        value: number | Page;
       } | null)
     | ({
         relationTo: 'posts';
-        value: string | Post;
+        value: number | Post;
       } | null)
     | ({
         relationTo: 'media';
-        value: string | Media;
+        value: number | Media;
       } | null)
     | ({
         relationTo: 'categories';
-        value: string | Category;
+        value: number | Category;
       } | null)
     | ({
         relationTo: 'users';
-        value: string | User;
+        value: number | User;
       } | null)
     | ({
         relationTo: 'redirects';
-        value: string | Redirect;
+        value: number | Redirect;
       } | null)
     | ({
         relationTo: 'forms';
-        value: string | Form;
+        value: number | Form;
       } | null)
     | ({
         relationTo: 'form-submissions';
-        value: string | FormSubmission;
+        value: number | FormSubmission;
       } | null)
     | ({
         relationTo: 'search';
-        value: string | Search;
+        value: number | Search;
+      } | null)
+    | ({
+        relationTo: 'payload-mcp-api-keys';
+        value: number | PayloadMcpApiKey;
       } | null)
     | ({
         relationTo: 'payload-folders';
-        value: string | FolderInterface;
+        value: number | FolderInterface;
       } | null);
   globalSlug?: string | null;
-  user: {
-    relationTo: 'users';
-    value: string | User;
-  };
+  user:
+    | {
+        relationTo: 'users';
+        value: number | User;
+      }
+    | {
+        relationTo: 'payload-mcp-api-keys';
+        value: number | PayloadMcpApiKey;
+      };
   updatedAt: string;
   createdAt: string;
 }
@@ -1021,11 +1550,16 @@ export interface PayloadLockedDocument {
  * via the `definition` "payload-preferences".
  */
 export interface PayloadPreference {
-  id: string;
-  user: {
-    relationTo: 'users';
-    value: string | User;
-  };
+  id: number;
+  user:
+    | {
+        relationTo: 'users';
+        value: number | User;
+      }
+    | {
+        relationTo: 'payload-mcp-api-keys';
+        value: number | PayloadMcpApiKey;
+      };
   key?: string | null;
   value?:
     | {
@@ -1044,7 +1578,7 @@ export interface PayloadPreference {
  * via the `definition` "payload-migrations".
  */
 export interface PayloadMigration {
-  id: string;
+  id: number;
   name?: string | null;
   batch?: number | null;
   updatedAt: string;
@@ -1077,6 +1611,16 @@ export interface PagesSelect<T extends boolean = true> {
               id?: T;
             };
         media?: T;
+        backgroundType?: T;
+        slideshowImages?: T;
+        youtubeVideoUrl?: T;
+        departureTab?: T;
+        arrivalTab?: T;
+        destinationLabel?: T;
+        originLabel?: T;
+        destinationPlaceholder?: T;
+        dateLabel?: T;
+        searchButton?: T;
       };
   layout?:
     | T
@@ -1086,6 +1630,25 @@ export interface PagesSelect<T extends boolean = true> {
         mediaBlock?: T | MediaBlockSelect<T>;
         archive?: T | ArchiveBlockSelect<T>;
         formBlock?: T | FormBlockSelect<T>;
+        flightsTable?: T | FlightsTableBlockSelect<T>;
+        carousel?: T | CarouselBlockSelect<T>;
+        latestNews?: T | LatestNewsBlockSelect<T>;
+        infoCards?: T | InfoCardsBlockSelect<T>;
+        logoCarousel?:
+          | T
+          | {
+              backgroundColor?: T;
+              speed?: T;
+              logos?:
+                | T
+                | {
+                    logo?: T;
+                    link?: T;
+                    id?: T;
+                  };
+              id?: T;
+              blockName?: T;
+            };
       };
   meta?:
     | T
@@ -1097,6 +1660,15 @@ export interface PagesSelect<T extends boolean = true> {
   publishedAt?: T;
   generateSlug?: T;
   slug?: T;
+  parent?: T;
+  breadcrumbs?:
+    | T
+    | {
+        doc?: T;
+        url?: T;
+        label?: T;
+        id?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
   _status?: T;
@@ -1182,6 +1754,121 @@ export interface FormBlockSelect<T extends boolean = true> {
   form?: T;
   enableIntro?: T;
   introContent?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "FlightsTableBlock_select".
+ */
+export interface FlightsTableBlockSelect<T extends boolean = true> {
+  headline?: T;
+  title?: T;
+  subtitle?: T;
+  departuresLabel?: T;
+  arrivalsLabel?: T;
+  tableHeaders?:
+    | T
+    | {
+        time?: T;
+        destination?: T;
+        flight?: T;
+        airline?: T;
+        terminal?: T;
+        gate?: T;
+        status?: T;
+      };
+  airportIata?: T;
+  refreshInterval?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "CarouselBlock_select".
+ */
+export interface CarouselBlockSelect<T extends boolean = true> {
+  backgroundImage?: T;
+  mainHeading?: T;
+  subtitle?: T;
+  cards?:
+    | T
+    | {
+        image?: T;
+        title?: T;
+        subtitle?: T;
+        buttonText?: T;
+        buttonLink?: T;
+        id?: T;
+      };
+  allServicesButton?:
+    | T
+    | {
+        text?: T;
+        link?: T;
+      };
+  settings?:
+    | T
+    | {
+        autoplay?: T;
+        autoplayDelay?: T;
+        showDots?: T;
+        showNavigation?: T;
+      };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "LatestNewsBlock_select".
+ */
+export interface LatestNewsBlockSelect<T extends boolean = true> {
+  mainHeading?: T;
+  subtitle?: T;
+  category?: T;
+  postsLimit?: T;
+  readMoreText?: T;
+  allNewsButton?:
+    | T
+    | {
+        text?: T;
+        link?: T;
+      };
+  settings?:
+    | T
+    | {
+        showNavigation?: T;
+        showDots?: T;
+        autoplay?: T;
+        autoplayDelay?: T;
+      };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "InfoCardsBlock_select".
+ */
+export interface InfoCardsBlockSelect<T extends boolean = true> {
+  title?: T;
+  subtitle?: T;
+  cards?:
+    | T
+    | {
+        cardTitle?: T;
+        cardDescription?: T;
+        cardImage?: T;
+        link?:
+          | T
+          | {
+              type?: T;
+              newTab?: T;
+              reference?: T;
+              url?: T;
+            };
+        style?: T;
+        id?: T;
+      };
   id?: T;
   blockName?: T;
 }
@@ -1338,6 +2025,9 @@ export interface UsersSelect<T extends boolean = true> {
   name?: T;
   updatedAt?: T;
   createdAt?: T;
+  enableAPIKey?: T;
+  apiKey?: T;
+  apiKeyIndex?: T;
   email?: T;
   resetPasswordToken?: T;
   resetPasswordExpiration?: T;
@@ -1547,6 +2237,144 @@ export interface SearchSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-mcp-api-keys_select".
+ */
+export interface PayloadMcpApiKeysSelect<T extends boolean = true> {
+  user?: T;
+  label?: T;
+  description?: T;
+  categories?:
+    | T
+    | {
+        find?: T;
+        create?: T;
+        update?: T;
+        delete?: T;
+      };
+  pages?:
+    | T
+    | {
+        find?: T;
+        create?: T;
+        update?: T;
+        delete?: T;
+      };
+  posts?:
+    | T
+    | {
+        find?: T;
+        create?: T;
+        update?: T;
+        delete?: T;
+      };
+  media?:
+    | T
+    | {
+        find?: T;
+        create?: T;
+        update?: T;
+        delete?: T;
+      };
+  users?:
+    | T
+    | {
+        find?: T;
+        create?: T;
+        update?: T;
+        delete?: T;
+      };
+  redirects?:
+    | T
+    | {
+        find?: T;
+        create?: T;
+        update?: T;
+        delete?: T;
+      };
+  forms?:
+    | T
+    | {
+        find?: T;
+        create?: T;
+        update?: T;
+        delete?: T;
+      };
+  formSubmissions?:
+    | T
+    | {
+        find?: T;
+        create?: T;
+        update?: T;
+        delete?: T;
+      };
+  search?:
+    | T
+    | {
+        find?: T;
+        create?: T;
+        update?: T;
+        delete?: T;
+      };
+  payloadFolders?:
+    | T
+    | {
+        find?: T;
+        create?: T;
+        update?: T;
+        delete?: T;
+      };
+  payloadMcpApiKeys?:
+    | T
+    | {
+        find?: T;
+        create?: T;
+        update?: T;
+        delete?: T;
+      };
+  payloadKv?:
+    | T
+    | {
+        find?: T;
+        create?: T;
+        update?: T;
+        delete?: T;
+      };
+  payloadJobs?:
+    | T
+    | {
+        find?: T;
+        create?: T;
+        update?: T;
+        delete?: T;
+      };
+  payloadLockedDocuments?:
+    | T
+    | {
+        find?: T;
+        create?: T;
+        update?: T;
+        delete?: T;
+      };
+  footer?:
+    | T
+    | {
+        find?: T;
+        update?: T;
+      };
+  header?:
+    | T
+    | {
+        find?: T;
+        update?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  enableAPIKey?: T;
+  apiKey?: T;
+  apiKeyIndex?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv_select".
  */
 export interface PayloadKvSelect<T extends boolean = true> {
@@ -1633,7 +2461,7 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
  * via the `definition` "header".
  */
 export interface Header {
-  id: string;
+  id: number;
   navItems?:
     | {
         link: {
@@ -1642,15 +2470,38 @@ export interface Header {
           reference?:
             | ({
                 relationTo: 'pages';
-                value: string | Page;
+                value: number | Page;
               } | null)
             | ({
                 relationTo: 'posts';
-                value: string | Post;
+                value: number | Post;
               } | null);
           url?: string | null;
           label: string;
         };
+        /**
+         * Add sub-links to create a dropdown menu for this nav item.
+         */
+        subItems?:
+          | {
+              link: {
+                type?: ('reference' | 'custom') | null;
+                newTab?: boolean | null;
+                reference?:
+                  | ({
+                      relationTo: 'pages';
+                      value: number | Page;
+                    } | null)
+                  | ({
+                      relationTo: 'posts';
+                      value: number | Post;
+                    } | null);
+                url?: string | null;
+                label: string;
+              };
+              id?: string | null;
+            }[]
+          | null;
         id?: string | null;
       }[]
     | null;
@@ -1662,7 +2513,7 @@ export interface Header {
  * via the `definition` "footer".
  */
 export interface Footer {
-  id: string;
+  id: number;
   navItems?:
     | {
         link: {
@@ -1671,11 +2522,11 @@ export interface Footer {
           reference?:
             | ({
                 relationTo: 'pages';
-                value: string | Page;
+                value: number | Page;
               } | null)
             | ({
                 relationTo: 'posts';
-                value: string | Post;
+                value: number | Post;
               } | null);
           url?: string | null;
           label: string;
@@ -1702,6 +2553,20 @@ export interface HeaderSelect<T extends boolean = true> {
               reference?: T;
               url?: T;
               label?: T;
+            };
+        subItems?:
+          | T
+          | {
+              link?:
+                | T
+                | {
+                    type?: T;
+                    newTab?: T;
+                    reference?: T;
+                    url?: T;
+                    label?: T;
+                  };
+              id?: T;
             };
         id?: T;
       };
@@ -1734,6 +2599,16 @@ export interface FooterSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "collections_widget".
+ */
+export interface CollectionsWidget {
+  data?: {
+    [k: string]: unknown;
+  };
+  width: 'full';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "TaskSchedulePublish".
  */
 export interface TaskSchedulePublish {
@@ -1743,16 +2618,26 @@ export interface TaskSchedulePublish {
     doc?:
       | ({
           relationTo: 'pages';
-          value: string | Page;
+          value: number | Page;
         } | null)
       | ({
           relationTo: 'posts';
-          value: string | Post;
+          value: number | Post;
         } | null);
     global?: string | null;
-    user?: (string | null) | User;
+    user?: (number | null) | User;
   };
   output?: unknown;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "MediaBlock".
+ */
+export interface MediaBlock {
+  media: number | Media;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'mediaBlock';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

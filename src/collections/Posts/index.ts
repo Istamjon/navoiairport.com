@@ -29,6 +29,23 @@ import { slugField } from 'payload'
 
 export const Posts: CollectionConfig<'posts'> = {
   slug: 'posts',
+
+  // 🔹 KOLLEKSIYA NOMLARI TARJIMASI
+  labels: {
+    singular: {
+      en: 'Post',
+      ru: 'Пост',
+      uz: 'Post',
+      zh: '文章',
+    },
+    plural: {
+      en: 'Posts',
+      ru: 'Посты',
+      uz: 'Postlar',
+      zh: '文章',
+    },
+  },
+
   access: {
     create: authenticated,
     delete: authenticated,
@@ -49,6 +66,19 @@ export const Posts: CollectionConfig<'posts'> = {
   },
   admin: {
     defaultColumns: ['title', 'slug', 'updatedAt'],
+
+    // 🔹 ADMIN PANEL META MA'LUMOTLARI
+    group: {
+      en: 'Content',
+      ru: 'Контент',
+      uz: 'Kontent',
+      zh: '内容',
+    },
+    description: {
+      en: 'Manage blog posts and articles',
+      ru: 'Управление статьями блога',
+    },
+
     livePreview: {
       url: ({ data, req }) =>
         generatePreviewPath({
@@ -70,16 +100,48 @@ export const Posts: CollectionConfig<'posts'> = {
       name: 'title',
       type: 'text',
       required: true,
+      localized: true,
+
+      //   TITLE MAYDONI TARJIMALARI
+      label: {
+        en: 'Title',
+        ru: 'Заголовок',
+      },
+      admin: {
+        placeholder: {
+          en: 'Enter post title',
+          ru: 'Введите заголовок поста',
+        },
+        description: {
+          en: 'The main title of your post',
+          ru: 'Основной заголовок вашей статьи',
+        },
+      },
     },
     {
       type: 'tabs',
       tabs: [
         {
+          label: {
+            en: 'Content',
+            ru: 'Содержание',
+          },
           fields: [
             {
               name: 'heroImage',
               type: 'upload',
               relationTo: 'media',
+              label: {
+                en: 'Hero Image',
+                ru: 'Главное изображение',
+              },
+              localized: false,
+              admin: {
+                description: {
+                  en: 'Featured image displayed at the top of the post',
+                  ru: 'Изображение, отображаемое вверху поста',
+                },
+              },
             },
             {
               name: 'content',
@@ -97,16 +159,18 @@ export const Posts: CollectionConfig<'posts'> = {
                 },
               }),
               label: false,
+              localized: true,
               required: true,
             },
           ],
-          label: 'Content',
         },
+
         {
           fields: [
             {
               name: 'relatedPosts',
               type: 'relationship',
+              localized: false,
               admin: {
                 position: 'sidebar',
               },
@@ -128,12 +192,21 @@ export const Posts: CollectionConfig<'posts'> = {
               },
               hasMany: true,
               relationTo: 'categories',
+              // 🔹 CATEGORIES TARJIMALARI
+              label: {
+                en: 'Categories',
+                ru: 'Категории',
+              },
             },
           ],
-          label: 'Meta',
+          label: {
+            en: 'Meta',
+            ru: 'Мета',
+          },
         },
         {
           name: 'meta',
+          localized: true,
           label: 'SEO',
           fields: [
             OverviewField({
@@ -164,6 +237,11 @@ export const Posts: CollectionConfig<'posts'> = {
     {
       name: 'publishedAt',
       type: 'date',
+      // 🔹 PUBLISHED AT TARJIMALARI
+      label: {
+        en: 'Published At',
+        ru: 'Опубликовано',
+      },
       admin: {
         date: {
           pickerAppearance: 'dayAndTime',
@@ -184,6 +262,12 @@ export const Posts: CollectionConfig<'posts'> = {
     {
       name: 'authors',
       type: 'relationship',
+      // 🔹 AUTHORS TARJIMALARI
+      label: {
+        en: 'Authors',
+        ru: 'Авторы',
+      },
+
       admin: {
         position: 'sidebar',
       },
@@ -207,10 +291,12 @@ export const Posts: CollectionConfig<'posts'> = {
         {
           name: 'id',
           type: 'text',
+          localized: false,
         },
         {
           name: 'name',
           type: 'text',
+          localized: false,
         },
       ],
     },
@@ -223,6 +309,7 @@ export const Posts: CollectionConfig<'posts'> = {
   },
   versions: {
     drafts: {
+      localizeStatus: true,
       autosave: {
         interval: 100, // We set this interval for optimal live preview
       },

@@ -7,11 +7,11 @@ import RichText from '@/components/RichText'
 
 import { CollectionArchive } from '@/components/CollectionArchive'
 
-export const ArchiveBlock: React.FC<
-  ArchiveBlockProps & {
-    id?: string
-  }
-> = async (props) => {
+type Props = ArchiveBlockProps & {
+  id?: string
+}
+
+export const ArchiveBlock = async (props: Props) => {
   const { id, categories, introContent, limit: limitFromProps, populateBy, selectedDocs } = props
 
   const limit = limitFromProps || 3
@@ -44,18 +44,21 @@ export const ArchiveBlock: React.FC<
     posts = fetchedPosts.docs
   } else {
     if (selectedDocs?.length) {
-      const filteredSelectedPosts = selectedDocs.map((post) => {
-        if (typeof post.value === 'object') return post.value
-      }) as Post[]
+      const filteredSelectedPosts = selectedDocs.reduce((acc, post) => {
+        if (typeof post.value === 'object') {
+          acc.push(post.value as Post)
+        }
+        return acc
+      }, [] as Post[])
 
       posts = filteredSelectedPosts
     }
   }
 
   return (
-    <div className="my-16" id={`block-${id}`}>
+    <div className=" " id={`block-${id}`}>
       {introContent && (
-        <div className="container mb-16">
+        <div className="container  mb-16">
           <RichText className="ms-0 max-w-[48rem]" data={introContent} enableGutter={false} />
         </div>
       )}

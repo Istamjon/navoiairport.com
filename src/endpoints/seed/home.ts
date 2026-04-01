@@ -47,7 +47,7 @@ export const home: (args: HomeArgs) => RequiredDataFromCollectionSlug<'pages'> =
                   format: 0,
                   mode: 'normal',
                   style: '',
-                  text: 'Payload Website Template',
+                  text: 'Navoiy xalqaro aeroporti – rasmiy sayt',
                   version: 1,
                 },
               ],

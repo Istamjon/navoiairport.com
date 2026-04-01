@@ -9,7 +9,7 @@ import {
   PaginationPrevious,
 } from '@/components/ui/pagination'
 import { cn } from '@/utilities/ui'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import React from 'react'
 
 export const Pagination: React.FC<{
@@ -26,6 +26,9 @@ export const Pagination: React.FC<{
   const hasExtraPrevPages = page - 1 > 1
   const hasExtraNextPages = page + 1 < totalPages
 
+  const searchParams = useSearchParams()
+  const params = searchParams.toString() ? `?${searchParams.toString()}` : ''
+
   return (
     <div className={cn('my-12', className)}>
       <PaginationComponent>
@@ -34,7 +37,7 @@ export const Pagination: React.FC<{
             <PaginationPrevious
               disabled={!hasPrevPage}
               onClick={() => {
-                router.push(`/posts/page/${page - 1}`)
+                router.push(`/posts/page/${page - 1}${params}`)
               }}
             />
           </PaginationItem>
@@ -49,7 +52,7 @@ export const Pagination: React.FC<{
             <PaginationItem>
               <PaginationLink
                 onClick={() => {
-                  router.push(`/posts/page/${page - 1}`)
+                  router.push(`/posts/page/${page - 1}${params}`)
                 }}
               >
                 {page - 1}
@@ -61,7 +64,7 @@ export const Pagination: React.FC<{
             <PaginationLink
               isActive
               onClick={() => {
-                router.push(`/posts/page/${page}`)
+                router.push(`/posts/page/${page}${params}`)
               }}
             >
               {page}
@@ -72,7 +75,7 @@ export const Pagination: React.FC<{
             <PaginationItem>
               <PaginationLink
                 onClick={() => {
-                  router.push(`/posts/page/${page + 1}`)
+                  router.push(`/posts/page/${page + 1}${params}`)
                 }}
               >
                 {page + 1}
@@ -90,7 +93,7 @@ export const Pagination: React.FC<{
             <PaginationNext
               disabled={!hasNextPage}
               onClick={() => {
-                router.push(`/posts/page/${page + 1}`)
+                router.push(`/posts/page/${page + 1}${params}`)
               }}
             />
           </PaginationItem>

@@ -80,8 +80,9 @@ export const homeStatic: RequiredDataFromCollectionSlug<'pages'> = {
     },
   },
   meta: {
-    description: 'An open-source website built with Payload and Next.js.',
-    title: 'Payload Website Template',
+    description:
+      'Navoiy xalqaro aeroporti rasmiy sayti: reyslar jadvali, onlayn xizmatlar, yuk va yo‘lovchi tashish imkoniyatlari hamda aeroport ma’lumotlari.',
+    title: 'Navoiy xalqaro aeroporti – rasmiy sayt',
   },
   title: 'Home',
   layout: [],
