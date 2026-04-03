@@ -1,15 +1,75 @@
+# Dependencies
 node_modules
+.pnpm-store
+.npm
+.yarn
+
+# Build outputs
 .next
-.git
-.env
-.env.local
-.env.production
-.vercel
 dist
 build
-public/media
+out
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Git
+.git
+.gitignore
+.gitattributes
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Testing
+coverage
+.nyc_output
+*.test.ts
+*.spec.ts
+__tests__
+
+# Documentation
+README.md
+CHANGELOG.md
+*.md
+docs
+
+# CI/CD
+.github
+.gitlab-ci.yml
+.travis.yml
+
+# Docker
+Dockerfile
+docker-compose*.yml
+.dockerignore
+
+# Logs
 *.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-.pnpm-store
+pnpm-debug.log*
+lerna-debug.log*
+
+# Media (will be mounted as volume - exclude from build)
+public/media/*
+!public/media/.gitkeep
+
+# Deployment
+.vercel
+.netlify
+
+# Misc
+*.tsbuildinfo
+.eslintcache

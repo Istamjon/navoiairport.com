@@ -29,12 +29,10 @@ export async function LatestNewsServer(props: Props) {
     categoryId = String(category.id)
   }
 
-  console.log('LatestNewsServer - Category:', categoryId, 'Limit:', postsLimit)
-
   if (categoryId) {
-    try {
-      const payload = await getPayload({ config: configPromise })
+    const payload = await getPayload({ config: configPromise })
 
+    try {
       const result = await payload.find({
         collection: 'posts',
         locale,
@@ -46,15 +44,13 @@ export async function LatestNewsServer(props: Props) {
         limit: postsLimit || 8,
         sort: '-publishedAt',
         depth: 1,
+        overrideAccess: false,
       })
 
       posts = result.docs as Post[]
-      console.log('LatestNewsServer - Found posts:', posts.length)
     } catch (error) {
-      console.error('Error fetching posts for LatestNews block:', error)
+      payload.logger.error(`Error fetching posts for LatestNews block: ${error}`)
     }
-  } else {
-    console.warn('LatestNewsServer - No category provided')
   }
 
   // Pass posts to client component

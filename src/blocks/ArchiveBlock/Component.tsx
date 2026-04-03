@@ -30,6 +30,7 @@ export const ArchiveBlock = async (props: Props) => {
       collection: 'posts',
       depth: 1,
       limit,
+      overrideAccess: false,
       ...(flattenedCategories && flattenedCategories.length > 0
         ? {
             where: {

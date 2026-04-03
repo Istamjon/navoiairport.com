@@ -8,5 +8,7 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./vitest.setup.ts'],
     include: ['tests/int/**/*.int.spec.ts'],
+    threads: false, // Disable threads to prevent child process errors
+    singleThread: true, // Run tests in a single thread
   },
 })

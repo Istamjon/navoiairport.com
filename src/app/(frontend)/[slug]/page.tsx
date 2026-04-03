@@ -16,8 +16,8 @@ import { LivePreviewListener } from '@/components/LivePreviewListener'
 import { getLocale } from '@/utilities/getLocale'
 import { generateBreadcrumbsFromNav } from '@/utilities/generateBreadcrumbs'
 
-// Must be dynamic so router.refresh() re-renders with the new locale cookie
-export const dynamic = 'force-dynamic'
+// Use ISR with on-demand revalidation instead of force-dynamic
+export const revalidate = 3600
 
 export async function generateStaticParams() {
   try {
@@ -42,7 +42,7 @@ export async function generateStaticParams() {
       })
 
     return params
-  } catch (error) {
+  } catch (_error) {
     return []
   }
 }
@@ -78,13 +78,9 @@ export default async function Page({ params: paramsPromise }: Args) {
 
   const { hero, layout } = page
 
-  // Fetch header for navigation-based breadcrumbs
-  const payload = await getPayload({ config: configPromise })
-  const header = await payload.findGlobal({
-    slug: 'header',
-    locale,
-    depth: 2, // Populate reference relationships
-  })
+  // Fetch header for navigation-based breadcrumbs (cached)
+  const { getLocalizedGlobal } = await import('@/utilities/getGlobals')
+  const header = await getLocalizedGlobal('header', 2)
 
   // Generate breadcrumbs from navigation structure
   const breadcrumbs = generateBreadcrumbsFromNav(decodedSlug, page.title || '', header)

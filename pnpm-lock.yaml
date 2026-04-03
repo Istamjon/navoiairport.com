@@ -21,8 +21,8 @@ importers:
         specifier: 3.79.0
         version: 3.79.0(payload@3.79.0(graphql@16.13.2)(typescript@5.7.3))
       '@payloadcms/email-nodemailer':
-        specifier: ^3.79.0
-        version: 3.81.0(payload@3.79.0(graphql@16.13.2)(typescript@5.7.3))
+        specifier: 3.79.0
+        version: 3.79.0(payload@3.79.0(graphql@16.13.2)(typescript@5.7.3))
       '@payloadcms/live-preview-react':
         specifier: 3.79.0
         version: 3.79.0(react-dom@19.2.1(react@19.2.1))(react@19.2.1)
@@ -36,8 +36,8 @@ importers:
         specifier: 3.79.0
         version: 3.79.0(hono@4.12.9)(next@15.4.11(@babel/core@7.29.0)(@playwright/test@1.58.2)(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(sass@1.77.4))(payload@3.79.0(graphql@16.13.2)(typescript@5.7.3))
       '@payloadcms/plugin-nested-docs':
-        specifier: ^3.79.0
-        version: 3.81.0(payload@3.79.0(graphql@16.13.2)(typescript@5.7.3))
+        specifier: 3.79.0
+        version: 3.79.0(payload@3.79.0(graphql@16.13.2)(typescript@5.7.3))
       '@payloadcms/plugin-redirects':
         specifier: 3.79.0
         version: 3.79.0(payload@3.79.0(graphql@16.13.2)(typescript@5.7.3))
@@ -1512,11 +1512,11 @@ packages:
     peerDependencies:
       payload: 3.79.0
 
-  '@payloadcms/email-nodemailer@3.81.0':
-    resolution: {integrity: sha512-0zKGiwby2hVmLubuO8w0XfskxHoWOrpjbw/v/5MkulOtPzzew1S9r+AxIPuzLq/FlBesQnW0IBYFDL6ziptSGw==}
+  '@payloadcms/email-nodemailer@3.79.0':
+    resolution: {integrity: sha512-NcE8WW7V5ly1uYxWRakpMfni2n56XlAQgsCTjNI9CKrp9o4bffo5/rSOP+fmhr47BiLDaaM1zACCSGqROmf/gA==}
     engines: {node: ^18.20.2 || >=20.9.0}
     peerDependencies:
-      payload: 3.81.0
+      payload: 3.79.0
 
   '@payloadcms/graphql@3.79.0':
     resolution: {integrity: sha512-q/fMw3JnUn+dMp7F4qsvoB5KfcdGjUVpttHI8+2o3+SbwQF2d26fHrz4D5Wz5Sm3ZTQg7XsCZzFKA3a9FL/sAg==}
@@ -1554,10 +1554,10 @@ packages:
     peerDependencies:
       payload: 3.79.0
 
-  '@payloadcms/plugin-nested-docs@3.81.0':
-    resolution: {integrity: sha512-qYmU14RnneHvw0CUe+Ir0O0jBXPTd8I6DlC9/OS8Obqm7ClxL8HtIVMSeKqFfgSseNMNi9f8sChF/OmT4eHTig==}
+  '@payloadcms/plugin-nested-docs@3.79.0':
+    resolution: {integrity: sha512-Cy4EdpOhhnkqiC0mqG4Q+Rtn+/1wQBBOb/rPphozFL5kH1Tqna+gZX8EHU23X5XA5dwuowHLP8rxliy1KOLpcA==}
     peerDependencies:
-      payload: 3.81.0
+      payload: 3.79.0
 
   '@payloadcms/plugin-redirects@3.79.0':
     resolution: {integrity: sha512-rVupcrjhmKGpy8fa5ps19RqqEDIg1rETlZhXgc0RULGMc35I7jZ+u2y1qg6TeZdg/4jgZ2apqYTkUkxd+b6HZA==}
@@ -7024,7 +7024,7 @@ snapshots:
       - sql.js
       - sqlite3
 
-  '@payloadcms/email-nodemailer@3.81.0(payload@3.79.0(graphql@16.13.2)(typescript@5.7.3))':
+  '@payloadcms/email-nodemailer@3.79.0(payload@3.79.0(graphql@16.13.2)(typescript@5.7.3))':
     dependencies:
       nodemailer: 7.0.12
       payload: 3.79.0(graphql@16.13.2)(typescript@5.7.3)
@@ -7105,7 +7105,7 @@ snapshots:
       - next
       - supports-color
 
-  '@payloadcms/plugin-nested-docs@3.81.0(payload@3.79.0(graphql@16.13.2)(typescript@5.7.3))':
+  '@payloadcms/plugin-nested-docs@3.79.0(payload@3.79.0(graphql@16.13.2)(typescript@5.7.3))':
     dependencies:
       payload: 3.79.0(graphql@16.13.2)(typescript@5.7.3)
 

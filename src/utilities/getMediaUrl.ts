@@ -9,6 +9,7 @@ import { getClientSideURL } from '@/utilities/getURL'
 export const getMediaUrl = (url: string | null | undefined, cacheTag?: string | null): string => {
   if (!url) return ''
 
+  // Encode cache tag
   if (cacheTag && cacheTag !== '') {
     cacheTag = encodeURIComponent(cacheTag)
   }
@@ -18,7 +19,17 @@ export const getMediaUrl = (url: string | null | undefined, cacheTag?: string | 
     return cacheTag ? `${url}?${cacheTag}` : url
   }
 
+  // Split URL into path segments and encode each segment
+  // This handles filenames with spaces and special characters
+  const urlParts = url.split('/')
+  const encodedParts = urlParts.map((part) => {
+    // Don't encode empty parts or query strings
+    if (!part || part.includes('?')) return part
+    return encodeURIComponent(part)
+  })
+  const encodedUrl = encodedParts.join('/')
+
   // Otherwise prepend client-side URL
   const baseUrl = getClientSideURL()
-  return cacheTag ? `${baseUrl}${url}?${cacheTag}` : `${baseUrl}${url}`
+  return cacheTag ? `${baseUrl}${encodedUrl}?${cacheTag}` : `${baseUrl}${encodedUrl}`
 }

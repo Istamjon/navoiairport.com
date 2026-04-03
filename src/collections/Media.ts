@@ -10,12 +10,34 @@ import { fileURLToPath } from 'url'
 
 import { anyone } from '../access/anyone'
 import { authenticated } from '../access/authenticated'
+import { generateUniqueFilename, isValidFilename } from '../utilities/sanitizeFilename'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
 export const Media: CollectionConfig = {
   slug: 'media',
+  hooks: {
+    beforeChange: [
+      async ({ data, req }) => {
+        // Sanitize and generate unique filename on upload
+        if (data.filename && req.file) {
+          // Validate filename for security
+          if (!isValidFilename(data.filename)) {
+            throw new Error('Invalid filename detected. Filename contains unsafe characters.')
+          }
+
+          // Generate unique filename with timestamp and UUID
+          const uniqueFilename = generateUniqueFilename(data.filename)
+          data.filename = uniqueFilename
+
+          req.payload.logger.info(`Generated unique filename: ${uniqueFilename}`)
+        }
+
+        return data
+      },
+    ],
+  },
   // 🔹 KOLLEKSIYA NOMLARI TARJIMASI
   labels: {
     singular: {
@@ -68,6 +90,12 @@ export const Media: CollectionConfig = {
     staticDir: path.resolve(dirname, '../../public/media'),
     adminThumbnail: 'thumbnail',
     focalPoint: true,
+    formatOptions: {
+      format: 'webp',
+      options: {
+        quality: 85,
+      },
+    },
     imageSizes: [
       {
         name: 'thumbnail',

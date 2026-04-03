@@ -1,7 +1,5 @@
 import type React from 'react'
-import type { Page, Post } from '@/payload-types'
 
-import { getCachedDocument } from '@/utilities/getDocument'
 import { getCachedRedirects } from '@/utilities/getRedirects'
 import { notFound, redirect } from 'next/navigation'
 
@@ -27,7 +25,17 @@ export const PayloadRedirects: React.FC<Props> = async ({ disableNotFound, url }
       const collection = redirectItem.to?.reference?.relationTo
       const id = redirectItem.to?.reference?.value
 
-      const document = (await getCachedDocument(collection, id)()) as Page | Post
+      // Need to fetch by ID to get slug - getCachedDocument expects slug not ID
+      const { getPayload } = await import('payload')
+      const configPromise = (await import('@payload-config')).default
+      const payload = await getPayload({ config: configPromise })
+      const document = await payload.findByID({
+        collection,
+        id,
+        depth: 0,
+        select: { slug: true },
+      })
+
       redirectUrl = `${redirectItem.to?.reference?.relationTo !== 'pages' ? `/${redirectItem.to?.reference?.relationTo}` : ''}/${
         document?.slug
       }`

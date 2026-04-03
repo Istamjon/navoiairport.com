@@ -13,13 +13,14 @@ import { cookies } from 'next/headers'
 const DICTIONARY = {
   uz: {
     title: 'Saytdan qidirish',
-    subtitle: 'Kerakli ma\'lumotni topish uchun quyidagi qidiruv panelidan foydalaning',
+    subtitle: "Kerakli ma'lumotni topish uchun quyidagi qidiruv panelidan foydalaning",
     results: 'Natijalar:',
     found: 'ta topildi',
     notFoundTitle: 'Hech narsa topilmadi',
     notFoundDesc1: 'Siz izlayotgan',
     word: 'so‘z',
-    notFoundDesc2: 'bo\'yicha hech qanday natija mavjud emas. Boshqa kalit so\'zni kiritib ko\'ring yoki bosh sahifaga qayting.',
+    notFoundDesc2:
+      "bo'yicha hech qanday natija mavjud emas. Boshqa kalit so'zni kiritib ko'ring yoki bosh sahifaga qayting.",
   },
   ru: {
     title: 'Поиск по сайту',
@@ -29,7 +30,8 @@ const DICTIONARY = {
     notFoundTitle: 'Ничего не найдено',
     notFoundDesc1: 'По запросу',
     word: 'слово',
-    notFoundDesc2: 'ничего не найдено. Попробуйте ввести другое ключевое слово или вернитесь на главную страницу.',
+    notFoundDesc2:
+      'ничего не найдено. Попробуйте ввести другое ключевое слово или вернитесь на главную страницу.',
   },
   en: {
     title: 'Site Search',
@@ -61,19 +63,20 @@ type Args = {
 export default async function Page({ searchParams: searchParamsPromise }: Args) {
   const { q: query } = await searchParamsPromise
   const payload = await getPayload({ config: configPromise })
-  
+
   const cookieStore = await cookies()
   const localeCookie = cookieStore.get('payload-locale')?.value
-  const activeLocale = (localeCookie && Object.keys(DICTIONARY).includes(localeCookie) 
-    ? localeCookie 
-    : 'uz') as keyof typeof DICTIONARY
-  
+  const activeLocale = (
+    localeCookie && Object.keys(DICTIONARY).includes(localeCookie) ? localeCookie : 'uz'
+  ) as keyof typeof DICTIONARY
+
   const t = DICTIONARY[activeLocale]
 
   const posts = await payload.find({
     collection: 'search',
     depth: 1,
     limit: 12,
+    overrideAccess: false,
     select: {
       title: true,
       slug: true,
@@ -113,16 +116,14 @@ export default async function Page({ searchParams: searchParamsPromise }: Args) 
   return (
     <div className="pt-24 pb-24 min-h-[80vh]">
       <PageClient />
-      
+
       {/* Search Header Region */}
       <div className="container mb-12 mt-8">
         <div className="max-w-4xl mx-auto text-center animate-in fade-in slide-in-from-bottom-4 duration-700">
           <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-4 text-foreground">
             {t.title}
           </h1>
-          <p className="text-lg text-muted-foreground mb-10 max-w-2xl mx-auto">
-            {t.subtitle}
-          </p>
+          <p className="text-lg text-muted-foreground mb-10 max-w-2xl mx-auto">{t.subtitle}</p>
 
           <div className="w-full">
             <Search />
@@ -135,7 +136,8 @@ export default async function Page({ searchParams: searchParamsPromise }: Args) 
         {query && (
           <div className="mb-8 flex items-center justify-between border-b pb-4">
             <h2 className="text-2xl font-bold">
-              <span className="text-muted-foreground font-normal">{t.results}</span> &quot;{query}&quot;
+              <span className="text-muted-foreground font-normal">{t.results}</span> &quot;{query}
+              &quot;
             </h2>
             <div className="text-sm font-medium text-muted-foreground bg-muted px-3 py-1 rounded-full">
               {posts.totalDocs || posts.docs.length} {t.found}
