@@ -19,17 +19,9 @@ export const getMediaUrl = (url: string | null | undefined, cacheTag?: string | 
     return cacheTag ? `${url}?${cacheTag}` : url
   }
 
-  // Split URL into path segments and encode each segment
-  // This handles filenames with spaces and special characters
-  const urlParts = url.split('/')
-  const encodedParts = urlParts.map((part) => {
-    // Don't encode empty parts or query strings
-    if (!part || part.includes('?')) return part
-    return encodeURIComponent(part)
-  })
-  const encodedUrl = encodedParts.join('/')
-
-  // Otherwise prepend client-side URL
+  // Just prepend the server URL, Next.js / Browsers will naturally handle characters
   const baseUrl = getClientSideURL()
-  return cacheTag ? `${baseUrl}${encodedUrl}?${cacheTag}` : `${baseUrl}${encodedUrl}`
+  const fullUrl = cacheTag ? `${url}?${cacheTag}` : url
+  
+  return `${baseUrl}${fullUrl}`
 }
