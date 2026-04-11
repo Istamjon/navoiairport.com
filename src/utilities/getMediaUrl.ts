@@ -19,9 +19,9 @@ export const getMediaUrl = (url: string | null | undefined, cacheTag?: string | 
     return cacheTag ? `${url}?${cacheTag}` : url
   }
 
-  // Just prepend the server URL, Next.js / Browsers will naturally handle characters
-  const baseUrl = getClientSideURL()
+  // Just return the relative URL, Next.js / Browsers will naturally handle characters
+  // Using relative URLs prevents issues with Docker container network resolution and remotePatterns
   const fullUrl = cacheTag ? `${url}?${cacheTag}` : url
   
-  return `${baseUrl}${fullUrl}`
+  return fullUrl
 }
