@@ -303,7 +303,18 @@ function getMidnightStr(date: Date) {
 function mapFR24WebFlight(flight: FR24WebFlight, isDeparture: boolean): Flight {
   const airlineIcao = flight.painted_as || ''
   const airlineIata = flight.airline_iata || ''
-  const flightIataCode = flight.flight ? flight.flight.replace(/[0-9]/g, '').trim() : airlineIata
+  
+  // Best attempt at obtaining the correct IATA/ICAO string:
+  let flightIataCode = airlineIata;
+  if (!flightIataCode && flight.flight) {
+    // Some flight strings combine code and digits, e.g. "S73200". We extract the first 2-3 alphanumeric chars.
+    const match = flight.flight.match(/^[A-Z0-9]{2,3}(?=\d|\s|$)/i);
+    if (match) {
+      flightIataCode = match[0].toUpperCase();
+    } else {
+      flightIataCode = flight.flight.replace(/[0-9\s]/g, '').trim().substring(0, 3);
+    }
+  }
 
   const destination = isDeparture ? (flight.dest_iata || '') : (flight.orig_iata || '')
   const destCity = isDeparture ? (flight.dest_name || AIRPORT_CITIES[destination] || '') : (flight.orig_name || AIRPORT_CITIES[destination] || '')
@@ -527,8 +538,11 @@ function LiveBadge({ locale }: { locale: LocaleCode }) {
 function AirlineLogo({ airline, isCargo }: { airline: string; isCargo?: boolean }) {
   const [imageError, setImageError] = useState(false)
 
+  // Airline IATA (2) or ICAO (3) code length sanity check
+  const isValidCode = airline && airline.length >= 2
+
   if (isCargo) {
-    if (!airline || imageError) {
+    if (!isValidCode || imageError) {
       return (
         <div className="w-20 h-10 flex items-center justify-center shrink-0">
           <Package className="size-6 text-amber-500 opacity-80" />
@@ -536,7 +550,7 @@ function AirlineLogo({ airline, isCargo }: { airline: string; isCargo?: boolean 
       )
     }
   } else {
-    if (!airline || imageError) {
+    if (!isValidCode || imageError) {
       return (
         <div className="w-20 h-10 flex items-center justify-center shrink-0">
           <Users className="size-6 text-sky-400 opacity-80" />
