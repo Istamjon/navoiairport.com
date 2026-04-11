@@ -307,8 +307,9 @@ function mapFR24WebFlight(flight: FR24WebFlight, isDeparture: boolean): Flight {
   // Best attempt at obtaining the correct IATA/ICAO string:
   let flightIataCode = airlineIata;
   if (!flightIataCode && flight.flight) {
-    // Some flight strings combine code and digits, e.g. "S73200". We extract the first 2-3 alphanumeric chars.
-    const match = flight.flight.match(/^[A-Z0-9]{2,3}(?=\d|\s|$)/i);
+    // ICAO codes are strictly 3 letters. IATA codes are 2 alphanumeric chars.
+    // e.g. "UZB301" -> "UZB", "HY301" -> "HY", "S7325" -> "S7", "2C575" -> "2C"
+    const match = flight.flight.match(/^([A-Z]{3}|[A-Z0-9]{2})/i);
     if (match) {
       flightIataCode = match[0].toUpperCase();
     } else {
@@ -535,28 +536,24 @@ function LiveBadge({ locale }: { locale: LocaleCode }) {
   )
 }
 
-function AirlineLogo({ airline, isCargo }: { airline: string; isCargo?: boolean }) {
+function AirlineLogo({ airline, airlineName, isCargo }: { airline: string; airlineName?: string; isCargo?: boolean }) {
   const [imageError, setImageError] = useState(false)
 
   // Airline IATA (2) or ICAO (3) code length sanity check
   const isValidCode = airline && airline.length >= 2
 
-  if (isCargo) {
-    if (!isValidCode || imageError) {
-      return (
-        <div className="w-20 h-10 flex items-center justify-center shrink-0">
-          <Package className="size-6 text-amber-500 opacity-80" />
-        </div>
-      )
-    }
-  } else {
-    if (!isValidCode || imageError) {
-      return (
-        <div className="w-20 h-10 flex items-center justify-center shrink-0">
-          <Users className="size-6 text-sky-400 opacity-80" />
-        </div>
-      )
-    }
+  if (!isValidCode || imageError) {
+    return (
+      <div className="w-[110px] h-[40px] flex items-center justify-center bg-muted/40 rounded-md px-2 flex-shrink-0 border border-border/20 text-center overflow-hidden">
+        {airlineName || airline ? (
+          <span className="text-[10px] font-bold text-foreground/80 leading-tight flex items-center justify-center w-full h-full">
+            {airlineName || airline}
+          </span>
+        ) : (
+          isCargo ? <Package className="size-5 text-amber-500 opacity-70" /> : <Users className="size-5 text-sky-400 opacity-70" />
+        )}
+      </div>
+    )
   }
 
   return (
@@ -564,7 +561,7 @@ function AirlineLogo({ airline, isCargo }: { airline: string; isCargo?: boolean 
       <img
         src={`https://pics.avs.io/250/80/${airline}.png`}
         className="w-full h-full object-contain"
-        alt={airline}
+        alt={airlineName || airline}
         onError={() => setImageError(true)}
       />
     </div>
@@ -967,7 +964,7 @@ export const FlightsTableBlock: React.FC<Props> = ({
                         {/* Airline */}
                         <td className="px-5 py-4">
                           <div className="flex items-center">
-                            <AirlineLogo airline={flight.airline} isCargo={flight.isCargo} />
+                            <AirlineLogo airline={flight.airline} airlineName={flight.airlineName} isCargo={flight.isCargo} />
                           </div>
                         </td>
 
@@ -1039,7 +1036,7 @@ export const FlightsTableBlock: React.FC<Props> = ({
                       <div>
                         <div className="text-xs text-muted-foreground mb-1">{headers.airline}</div>
                         <div>
-                          <AirlineLogo airline={flight.airline} isCargo={flight.isCargo} />
+                          <AirlineLogo airline={flight.airline} airlineName={flight.airlineName} isCargo={flight.isCargo} />
                         </div>
                       </div>
                     </div>
