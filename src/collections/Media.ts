@@ -17,27 +17,7 @@ const dirname = path.dirname(filename)
 
 export const Media: CollectionConfig = {
   slug: 'media',
-  hooks: {
-    beforeChange: [
-      async ({ data, req }) => {
-        // Sanitize and generate unique filename on upload
-        if (data.filename && req.file) {
-          // Validate filename for security
-          if (!isValidFilename(data.filename)) {
-            throw new Error('Invalid filename detected. Filename contains unsafe characters.')
-          }
-
-          // Generate unique filename with timestamp and UUID
-          const uniqueFilename = generateUniqueFilename(data.filename)
-          data.filename = uniqueFilename
-
-          req.payload.logger.info(`Generated unique filename: ${uniqueFilename}`)
-        }
-
-        return data
-      },
-    ],
-  },
+  hooks: {},
   // 🔹 KOLLEKSIYA NOMLARI TARJIMASI
   labels: {
     singular: {
@@ -87,6 +67,7 @@ export const Media: CollectionConfig = {
   ],
   upload: {
     // Upload to the public/media directory in Next.js making them publicly accessible even outside of Payload
+    overwriteExistingFiles: false,
     staticDir: path.resolve(dirname, '../../public/media'),
     adminThumbnail: 'thumbnail',
     focalPoint: true,
