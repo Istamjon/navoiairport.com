@@ -17,7 +17,8 @@ export async function GET(req: NextRequest): Promise<Response> {
   const slug = searchParams.get('slug')
   const previewSecret = searchParams.get('previewSecret')
 
-  if (previewSecret !== process.env.NEXT_PUBLIC_PREVIEW_SECRET) {
+  const secretToCheck = process.env.NEXT_PUBLIC_PREVIEW_SECRET || '3bdc5b49242f9100d6669380edeaf9eb'
+  if (previewSecret !== secretToCheck) {
     return new Response('Invalid preview secret', { status: 403 })
   }
 

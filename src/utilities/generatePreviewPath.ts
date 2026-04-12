@@ -24,7 +24,7 @@ export const generatePreviewPath = ({ collection, slug }: Props) => {
     slug: encodedSlug,
     collection,
     path: `${collectionPrefixMap[collection]}/${encodedSlug}`,
-    previewSecret: process.env.NEXT_PUBLIC_PREVIEW_SECRET || '',
+    previewSecret: process.env.NEXT_PUBLIC_PREVIEW_SECRET || '3bdc5b49242f9100d6669380edeaf9eb',
   })
 
   const url = `/next/preview?${encodedParams.toString()}`
