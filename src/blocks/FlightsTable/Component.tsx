@@ -79,6 +79,9 @@ interface FR24WebFlight {
   gate: string | null
   baggage: string | null
   
+  // AirLabs specific
+  delayed?: number | null          // Delay in minutes (from AirLabs)
+  
   source: string
 }
 
@@ -360,7 +363,7 @@ function mapFR24WebFlight(flight: FR24WebFlight, isDeparture: boolean): Flight {
     gate: flight.gate || '-',
     baggage: flight.baggage || undefined,
     status: derivedStatus,
-    delay: undefined, // internal Web API rarely expresses exact integer delays here
+    delay: (flight.delayed && flight.delayed > 0) ? flight.delayed : undefined,
     aircraftType: flight.type || undefined,
     registration: flight.reg || undefined,
     isCargo: isCargo ?? false,
