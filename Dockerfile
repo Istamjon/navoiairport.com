@@ -53,9 +53,10 @@ RUN pnpm run build
 # Production image, copy all the files and run next
 FROM base AS runner
 
-# Install only Sharp runtime dependencies (no build tools)
+# Install Sharp runtime deps + curl (required for flights API — Cloudflare TLS bypass)
 RUN apk add --no-cache \
     vips \
+    curl \
     && rm -rf /var/cache/apk/*
 
 WORKDIR /app
