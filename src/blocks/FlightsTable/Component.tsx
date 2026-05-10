@@ -218,8 +218,11 @@ const AIRPORT_CITIES: Record<string, string> = {
   PEK: 'Beijing (Capital)',
   PKX: 'Beijing (Daxing)',
   PVG: 'Shanghai (Pudong)',
-  SHA: "Shanghai (Hongqiao)",
+  SHA: 'Shanghai (Hongqiao)',
   CAN: 'Guangzhou',
+  HGH: 'Hangzhou',
+  CGO: 'Zhengzhou',
+  SZX: 'Shenzhen',
   CTU: 'Chengdu',
   XIY: "Xi'an",
   URC: 'Urumqi',
@@ -247,6 +250,9 @@ const AIRPORT_CITIES: Record<string, string> = {
   ORD: 'Chikago',
   LAX: 'Los-Anjeles',
   JFK: 'Nyu-York (JFK)',
+  ANC: 'Anchorage',
+  MEM: 'Memphis',
+  SDF: 'Louisville',
 }
 
 const CARGO_AIRLINES_ICAO = new Set([

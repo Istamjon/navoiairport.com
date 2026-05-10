@@ -45,7 +45,7 @@ const Clock: React.FC = () => {
 const socials = [
   {
     label: 'YouTube',
-    href: 'https://youtube.com',
+    href: 'https://www.youtube.com/@NavoiInternationalAirport',
     color: 'hover:text-[#FF0000]',
     icon: (
       // YouTube SVG path
@@ -56,7 +56,7 @@ const socials = [
   },
   {
     label: 'Instagram',
-    href: 'https://instagram.com',
+    href: 'https://www.instagram.com/navoiairport?igsh=MTA4MXFlbWdrZm1xdw==',
     color: 'hover:text-[#E1306C]',
     icon: (
       <svg className="size-3.5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -66,7 +66,7 @@ const socials = [
   },
   {
     label: 'Facebook',
-    href: 'https://facebook.com',
+    href: 'https://www.facebook.com/share/18CkfZAoka/',
     color: 'hover:text-[#1877F2]',
     icon: (
       <svg className="size-3.5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -76,7 +76,7 @@ const socials = [
   },
   {
     label: 'Telegram',
-    href: 'https://t.me',
+    href: 'https://t.me/navoiairportofficial',
     color: 'hover:text-[#229ED9]',
     icon: (
       <svg className="size-3.5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -215,11 +215,11 @@ export const Topbar: React.FC<TopbarProps> = ({ hidden }) => {
           <span aria-hidden="true" className="h-3 w-px bg-blue-300 shrink-0" />
 
           <a
-            href="mailto:info@navoiairport.uz"
+            href="mailto:info.nvi@uzairports.com"
             className="hidden md:flex items-center gap-1.5 text-sm text-blue-300 hover:text-blue-300 transition-colors"
           >
             <Mail className="size-3 shrink-0" />
-            <span>info@navoiairport.uz</span>
+            <span>info.nvi@uzairports.com</span>
           </a>
           <span aria-hidden="true" className="h-3 w-px bg-blue-300 shrink-0" />
           <a

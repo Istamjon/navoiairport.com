@@ -92,17 +92,50 @@ export default function MapChartComponent() {
         fillOpacity: 0.8,
       })
 
-      // Hub (single point) and destinations (separate list)
+      // ── Live Data Fetching ──
+      let liveDestinations: any[] = []
+      try {
+        const [depRes, arrRes] = await Promise.all([
+          fetch('/api/flights?type=departures&airport=NVI'),
+          fetch('/api/flights?type=arrivals&airport=NVI'),
+        ])
+        const [depData, arrData] = await Promise.all([depRes.json(), arrRes.json()])
+
+        const allFlights = [...(depData.flights || []), ...(arrData.flights || [])]
+
+        allFlights.forEach((f: any) => {
+          const isDeparture = f.orig_iata === 'NVI'
+          const targetIata = isDeparture ? f.dest_iata : f.orig_iata
+          const targetName = isDeparture ? f.dest_name : f.orig_name
+          const targetLat = isDeparture ? f.dest_lat : f.orig_lat
+          const targetLon = isDeparture ? f.dest_lon : f.orig_lon
+
+          if (targetIata && targetLat && targetLon) {
+            liveDestinations.push({
+              latitude: targetLat,
+              longitude: targetLon,
+              title: targetName || targetIata,
+              isDeparture,
+            })
+          }
+        })
+      } catch (err) {
+        console.error('Failed to fetch live map data:', err)
+      }
+
+      // Hub (single point) and default destinations (fallback)
       const hub = { latitude: 40.11778, longitude: 65.175, title: 'Navoiy (NVI)' }
-      const destinations = [
-        { latitude: 41.26465, longitude: 69.21627, title: 'Toshkent' },
-        { latitude: 30.29365, longitude: 120.16142, title: 'Hangzhou' },
-        { latitude: 52.48142, longitude: -1.89983, title: 'Birmingham' },
-        { latitude: 41.16343, longitude: 28.76644, title: 'Istanbul' },
-        { latitude: 22.396428, longitude: 114.109497, title: 'Hong Kong' },
-        { latitude: 55.5915, longitude: 37.2615, title: 'Moskva (Vnukovo)' },
-        { latitude: 30.66667, longitude: 104.06667, title: 'Chengdu' },
+      const defaultDestinations = [
+        { latitude: 41.26465, longitude: 69.21627, title: 'Toshkent', isDeparture: true },
+        { latitude: 30.2295, longitude: 120.4344, title: 'Hangzhou', isDeparture: true },
+        { latitude: 41.2753, longitude: 28.7519, title: 'Istanbul', isDeparture: true },
+        { latitude: 55.5915, longitude: 37.2615, title: 'Moskva (Vnukovo)', isDeparture: true },
+        { latitude: 31.1443, longitude: 121.8083, title: 'Shanghai', isDeparture: true },
+        { latitude: 25.2532, longitude: 55.3657, title: 'Dubai', isDeparture: true },
       ]
+
+      const finalDestinations =
+        liveDestinations.length > 0 ? liveDestinations : defaultDestinations
 
       // Hub point series (single, prominent)
       const hubSeries = chart.series.push(am5map.MapPointSeries.new(root, {}))
@@ -197,27 +230,48 @@ export default function MapChartComponent() {
         )
       }
 
-      for (const dest of destinations) {
+      for (const dest of finalDestinations) {
         const destPoint = addDestination(dest)
         const flightDuration = 140 * dist(hub, dest)
 
-        // Departure: Navoiy → Destination (solid blue)
-        const departureLine = addLine(hubPoint, destPoint, departureLineSeries)
-        const departurePlane = planeSeries.pushDataItem({
-          lineDataItem: departureLine,
-          positionOnLine: 0,
-          autoRotate: true,
-        })
-        departurePlane.animate({
-          key: 'positionOnLine',
-          to: 1,
-          duration: flightDuration,
-          loops: Infinity,
-          easing: am5.ease.linear,
-        })
+        if (dest.isDeparture) {
+          // Departure: Navoiy → Destination (solid blue)
+          const departureLine = addLine(hubPoint, destPoint, departureLineSeries)
+          const departurePlane = planeSeries.pushDataItem({
+            lineDataItem: departureLine,
+            positionOnLine: 0,
+            autoRotate: true,
+          })
+          departurePlane.animate({
+            key: 'positionOnLine',
+            to: 1,
+            duration: flightDuration,
+            loops: Infinity,
+            easing: am5.ease.linear,
+          })
+        } else {
+          // Arrival: Destination → Navoiy (solid blue but opposite direction)
+          const arrivalLine = addLine(destPoint, hubPoint, departureLineSeries)
+          const arrivalPlane = planeSeries.pushDataItem({
+            lineDataItem: arrivalLine,
+            positionOnLine: 0,
+            autoRotate: true,
+          })
+          arrivalPlane.animate({
+            key: 'positionOnLine',
+            to: 1,
+            duration: flightDuration,
+            loops: Infinity,
+            easing: am5.ease.linear,
+          })
+        }
 
-        // Return: Destination → Navoiy (dashed green, no plane)
-        addLine(destPoint, hubPoint, returnLineSeries)
+        // Return line (visual only, dashed)
+        if (dest.isDeparture) {
+          addLine(destPoint, hubPoint, returnLineSeries)
+        } else {
+          addLine(hubPoint, destPoint, returnLineSeries)
+        }
       }
 
       // ── Legend ──

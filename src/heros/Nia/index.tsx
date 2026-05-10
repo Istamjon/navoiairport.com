@@ -52,6 +52,36 @@ const FlightSearchBlock: React.FC<{ labels?: FlightSearchLabels }> = ({ labels }
   const [destination, setDestination] = useState('')
   const [date, setDate] = useState('')
 
+  // Mapping city names to IATA codes for booking URL
+  const CITY_MAP: Record<string, string> = {
+    tashkent: 'TAS',
+    toshkent: 'TAS',
+    tas: 'TAS',
+    moscow: 'VKO',
+    moskva: 'VKO',
+    vko: 'VKO',
+    'st. petersburg': 'LED',
+    piter: 'LED',
+    led: 'LED',
+    navoi: 'NVI',
+    navoiy: 'NVI',
+    nvi: 'NVI',
+  }
+
+  const handleSearch = () => {
+    const fromCode = tab === 'departure' ? 'NVI' : CITY_MAP[destination.toLowerCase()] || ''
+    const toCode = tab === 'arrival' ? 'NVI' : CITY_MAP[destination.toLowerCase()] || ''
+
+    if (fromCode && toCode) {
+      // If we have both codes, we can deep link
+      const url = `https://book.uzairways.com/uz/booking/search?from=${fromCode}&to=${toCode}&date=${date}`
+      window.open(url, '_blank')
+    } else {
+      // Fallback to main booking page if mapping fails
+      window.open('https://booking.uzairways.com/uz/index.html', '_blank')
+    }
+  }
+
   // Default labels (Uzbek)
   const defaultLabels: FlightSearchLabels = {
     departureTab: 'UCHIB KETISH',
@@ -137,12 +167,18 @@ const FlightSearchBlock: React.FC<{ labels?: FlightSearchLabels }> = ({ labels }
             <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-gray-400" />
             <motion.input
               type="text"
+              list="destinations"
               value={destination}
               onChange={(e) => setDestination(e.target.value)}
               placeholder={t.destinationPlaceholder}
               whileFocus={{ borderColor: '#000827' }}
               className="rounded-md w-full h-11 pl-9 pr-3 text-sm text-gray-800 border border-gray-400 focus:border-primary focus:outline-none placeholder:text-gray-400 transition-colors"
             />
+            <datalist id="destinations">
+              <option value="Toshkent" />
+              <option value="Moskva" />
+              <option value="St. Petersburg" />
+            </datalist>
           </div>
         </motion.div>
 
@@ -171,6 +207,7 @@ const FlightSearchBlock: React.FC<{ labels?: FlightSearchLabels }> = ({ labels }
         {/* Submit */}
         <motion.button
           type="button"
+          onClick={handleSearch}
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.3, delay: 0.2 }}
