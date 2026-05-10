@@ -567,6 +567,7 @@ function AirlineLogo({ airline, airlineName, isCargo }: { airline: string; airli
 
   return (
     <div className="w-[110px] h-[40px] flex items-center justify-center bg-white rounded-md px-1 flex-shrink-0 border border-border/20">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={`https://pics.avs.io/250/80/${airline}.png`}
         className="w-full h-full object-contain"
@@ -658,7 +659,7 @@ export const FlightsTableBlock: React.FC<Props> = ({
         setIsRefreshing(false)
       }
     },
-    [airportIata],
+    [airportIata, lang.unknown_error],
   )
 
   useEffect(() => {

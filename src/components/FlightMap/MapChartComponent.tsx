@@ -93,7 +93,7 @@ export default function MapChartComponent() {
       })
 
       // ── Live Data Fetching ──
-      let liveDestinations: any[] = []
+      const liveDestinations: any[] = []
       try {
         const [depRes, arrRes] = await Promise.all([
           fetch('/api/flights?type=departures&airport=NVI'),

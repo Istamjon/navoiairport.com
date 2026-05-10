@@ -38,7 +38,7 @@ export async function generateStaticParams() {
     })
 
     return params
-  } catch (error) {
+  } catch (_error) {
     return []
   }
 }
@@ -49,7 +49,7 @@ type Args = {
   }>
 }
 
-function sanitizeLexicalData(data: any): any {
+function sanitizeLexicalData(data: Record<string, any>): any {
   if (!data?.root?.children) return data
 
   const cleanChildren = (children: any[], inP: boolean = false): any[] => {
