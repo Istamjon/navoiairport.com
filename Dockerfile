@@ -14,7 +14,7 @@ RUN apk add --no-cache \
 WORKDIR /app
 
 # Enable pnpm
-RUN corepack enable pnpm && corepack prepare pnpm@latest --activate
+RUN corepack enable pnpm && corepack prepare pnpm@9 --activate
 
 # Copy lockfiles first for better layer caching
 COPY package.json pnpm-lock.yaml* ./
@@ -32,7 +32,7 @@ RUN apk add --no-cache \
     python3
 
 WORKDIR /app
-RUN corepack enable pnpm && corepack prepare pnpm@latest --activate
+RUN corepack enable pnpm && corepack prepare pnpm@9 --activate
 
 # Copy dependencies from deps stage
 COPY --from=deps /app/node_modules ./node_modules
