@@ -53,10 +53,11 @@ RUN pnpm run build
 # Production image, copy all the files and run next
 FROM base AS runner
 
-# Install Sharp runtime deps + curl (required for flights API — Cloudflare TLS bypass)
+# Install Sharp runtime deps + curl (required for flights API — Cloudflare TLS bypass) + postgres client
 RUN apk add --no-cache \
     vips \
     curl \
+    postgresql-client \
     && rm -rf /var/cache/apk/*
 
 WORKDIR /app
@@ -64,6 +65,7 @@ WORKDIR /app
 # Production environment
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
+ENV CI=true
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
@@ -81,6 +83,10 @@ RUN mkdir -p public/media && \
     chown -R nextjs:nodejs public/media && \
     chmod -R 755 public/media
 
+# Copy and setup entrypoint script
+COPY --chown=nextjs:nodejs docker-entrypoint.sh ./docker-entrypoint.sh
+RUN chmod +x ./docker-entrypoint.sh
+
 # Switch to non-root user
 USER nextjs
 
@@ -90,4 +96,5 @@ EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
   CMD node -e "require('http').get('http://localhost:3000/api/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"
 
-CMD ["sh", "-c", "echo y | node server.js"]
+ENTRYPOINT ["./docker-entrypoint.sh"]
+CMD ["node", "server.js"]

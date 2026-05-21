@@ -159,7 +159,7 @@ export default buildConfig({
   secret: process.env.PAYLOAD_SECRET,
   sharp,
   typescript: {
-    outputFile: path.resolve(dirname, 'payload-types.ts'),
+    outputFile: process.env.NODE_ENV === 'production' ? false : path.resolve(dirname, 'payload-types.ts'),
   },
   jobs: {
     access: {
