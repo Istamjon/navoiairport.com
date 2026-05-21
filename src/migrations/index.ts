@@ -2,6 +2,7 @@ import * as migration_20260317_191617_localization_fix from './20260317_191617_l
 import * as migration_20260317_191943_finalize_localization from './20260317_191943_finalize_localization';
 import * as migration_20260317_192533_fix_hero_localization from './20260317_192533_fix_hero_localization';
 import * as migration_20260317_192941_fix_hero_localization_final_v2 from './20260317_192941_fix_hero_localization_final_v2';
+import * as migration_20260521_201101 from './20260521_201101';
 
 export const migrations = [
   {
@@ -23,5 +24,10 @@ export const migrations = [
     up: migration_20260317_192941_fix_hero_localization_final_v2.up,
     down: migration_20260317_192941_fix_hero_localization_final_v2.down,
     name: '20260317_192941_fix_hero_localization_final_v2',
+  },
+  {
+    up: migration_20260521_201101.up,
+    down: migration_20260521_201101.down,
+    name: '20260521_201101'
   },
 ];
