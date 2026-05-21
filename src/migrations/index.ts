@@ -22,6 +22,6 @@ export const migrations = [
   {
     up: migration_20260317_192941_fix_hero_localization_final_v2.up,
     down: migration_20260317_192941_fix_hero_localization_final_v2.down,
-    name: '20260317_192941_fix_hero_localization_final_v2'
+    name: '20260317_192941_fix_hero_localization_final_v2',
   },
 ];

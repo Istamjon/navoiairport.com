@@ -1,21 +1,20 @@
-import React, { lazy } from 'react'
 import type { Page } from '@/payload-types'
 import { inclusionsCondition } from '@/utilities/conditionals'
 
-const ArchiveBlock = lazy(() => import('./ArchiveBlock/Component'))
-const CallToAction = lazy(() => import('./CallToAction/Component'))
-const Carousel = lazy(() => import('./Carusel/Component'))
-const Content = lazy(() => import('./Content/Component'))
-const FlightsTable = lazy(() => import('./FlightsTable/Component'))
-const Form = lazy(() => import('./Form/Component'))
-const InfoCards = lazy(() => import('./InfoCards/Component'))
-const LatestNews = lazy(() => import('./LatestNews/Component'))
-const LogoCarousel = lazy(() => import('./LogoCarousel/Component'))
-const MediaBlock = lazy(() => import('./MediaBlock/Component'))
-const TestimonialBlock = lazy(() => import('./TestimonialBlock/Component'))
-const GalleryBlock = lazy(() => import('./Gallery/Component'))
-const ContactBlock = lazy(() => import('./ContactBlock/Component'))
-const FAQBlock = lazy(() => import('./FAQ/Component'))
+import ArchiveBlock from './ArchiveBlock/Component'
+import CallToAction from './CallToAction/Component'
+import Carousel from './Carusel/Component'
+import Content from './Content/Component'
+import FlightsTable from './FlightsTable/Component'
+import Form from './Form/Component'
+import InfoCards from './InfoCards/Component'
+import LatestNews from './LatestNews/Component'
+import LogoCarousel from './LogoCarousel/Component'
+import MediaBlock from './MediaBlock/Component'
+import TestimonialBlock from './TestimonialBlock/Component'
+import GalleryBlock from './Gallery/Component'
+import ContactBlock from './ContactBlock/Component'
+import FAQBlock from './FAQ/Component'
 
 import { LoadingBlock } from './Loading'
 
