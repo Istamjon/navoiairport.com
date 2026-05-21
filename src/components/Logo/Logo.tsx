@@ -1,7 +1,7 @@
 import clsx from 'clsx'
 import React from 'react'
 import Image from 'next/image'
-import logoSrc from '@/assets/logo1.svg'
+import logoSrc from '@/assets/logo2.svg'
 
 interface Props {
   className?: string

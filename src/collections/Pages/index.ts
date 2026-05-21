@@ -13,6 +13,10 @@ import { Carousel } from '../../blocks/Carusel/config'
 import { LatestNews } from '../../blocks/LatestNews/config'
 import { InfoCards } from '../../blocks/InfoCards/config'
 import { LogoCarousel } from '../../blocks/LogoCarousel/config'
+import { TestimonialBlock } from '../../blocks/TestimonialBlock/config'
+import { Gallery } from '../../blocks/Gallery/config'
+import { ContactBlock } from '../../blocks/ContactBlock/config'
+import { FAQ } from '../../blocks/FAQ/config'
 import { hero } from '@/heros/config'
 import { slugField } from 'payload'
 import { populatePublishedAt } from '../../hooks/populatePublishedAt'
@@ -154,6 +158,10 @@ export const Pages: CollectionConfig<'pages'> = {
                 LatestNews,
                 InfoCards,
                 LogoCarousel,
+                TestimonialBlock,
+                Gallery,
+                ContactBlock,
+                FAQ,
               ],
               required: true,
               localized: true,

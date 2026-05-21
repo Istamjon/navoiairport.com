@@ -1,58 +1,117 @@
-import React, { Fragment } from 'react'
-
+import React, { lazy } from 'react'
 import type { Page } from '@/payload-types'
+import { inclusionsCondition } from '@/utilities/conditionals'
 
-import { ArchiveBlock } from '@/blocks/ArchiveBlock/Component'
-import { CallToActionBlock } from '@/blocks/CallToAction/Component'
-import { ContentBlock } from '@/blocks/Content/Component'
-import { FormBlock } from '@/blocks/Form/Component'
-import { MediaBlock } from '@/blocks/MediaBlock/Component'
-import { FlightsTableBlock } from '@/blocks/FlightsTable/Component'
-import { CarouselBlock } from '@/blocks/Carusel/Component'
-import { LatestNewsServer } from '@/blocks/LatestNews/ServerComponent'
-import { InfoCardsComponent } from '@/blocks/InfoCards/Component'
-import { LogoCarouselComponent } from '@/blocks/LogoCarousel/Component'
+const ArchiveBlock = lazy(() => import('./ArchiveBlock/Component'))
+const CallToAction = lazy(() => import('./CallToAction/Component'))
+const Carousel = lazy(() => import('./Carusel/Component'))
+const Content = lazy(() => import('./Content/Component'))
+const FlightsTable = lazy(() => import('./FlightsTable/Component'))
+const Form = lazy(() => import('./Form/Component'))
+const InfoCards = lazy(() => import('./InfoCards/Component'))
+const LatestNews = lazy(() => import('./LatestNews/Component'))
+const LogoCarousel = lazy(() => import('./LogoCarousel/Component'))
+const MediaBlock = lazy(() => import('./MediaBlock/Component'))
+const TestimonialBlock = lazy(() => import('./TestimonialBlock/Component'))
+const GalleryBlock = lazy(() => import('./Gallery/Component'))
+const ContactBlock = lazy(() => import('./ContactBlock/Component'))
+const FAQBlock = lazy(() => import('./FAQ/Component'))
 
-const blockComponents = {
-  archive: ArchiveBlock,
-  content: ContentBlock,
-  cta: CallToActionBlock,
-  formBlock: FormBlock,
-  mediaBlock: MediaBlock,
-  flightsTable: FlightsTableBlock,
-  carousel: CarouselBlock,
-  latestNews: LatestNewsServer,
-  infoCards: InfoCardsComponent,
-  logoCarousel: LogoCarouselComponent,
-}
+import { LoadingBlock } from './Loading'
 
-export const RenderBlocks = async (props: { blocks: Page['layout'][0][] }) => {
+export const RenderBlocks: React.FC<{
+  blocks: NonNullable<Page['layout']>
+}> = (props) => {
   const { blocks } = props
 
-  const hasBlocks = blocks && Array.isArray(blocks) && blocks.length > 0
+  const blocksToRender = blocks?.filter(inclusionsCondition)
 
-  if (hasBlocks) {
-    return (
-      <Fragment>
-        {blocks.map((block, index) => {
-          const { blockType } = block
-
-          if (blockType && blockType in blockComponents) {
-            const Block = blockComponents[blockType]
-
-            if (Block) {
-              return (
-                <div className=" " key={index}>
-                  <Block {...(block as any)} disableInnerContainer />
-                </div>
-              )
-            }
-          }
-          return null
-        })}
-      </Fragment>
-    )
+  if (!blocksToRender || !blocksToRender.length) {
+    return null
   }
 
-  return null
+  return (
+    <div>
+      {blocksToRender.map((block, index) => {
+        const { blockType } = block
+
+        switch (blockType) {
+          case 'archive':
+            return <ArchiveBlock key={index} {...block} />
+          case 'cta':
+            return <CallToAction key={index} {...block} />
+          case 'carousel':
+            return <Carousel key={index} {...block} />
+          case 'content':
+            return <Content key={index} {...block} />
+          case 'flightsTable':
+            return <FlightsTable key={index} {...block} />
+          case 'formBlock':
+            return <Form key={index} {...block as unknown as Parameters<typeof Form>[0]} />
+          case 'infoCards':
+            return <InfoCards key={index} {...block} />
+          case 'latestNews':
+            return <LatestNews key={index} {...block} />
+          case 'logoCarousel':
+            return <LogoCarousel key={index} {...block} />
+          case 'mediaBlock':
+            return <MediaBlock key={index} {...block} />
+          case 'testimonial':
+            return <TestimonialBlock key={index} {...block} />
+          case 'gallery':
+            return <GalleryBlock key={index} {...block} />
+          case 'contact':
+            return <ContactBlock key={index} {...block} />
+          case 'faq':
+            return <FAQBlock key={index} {...block} />
+          default:
+            return <LoadingBlock key={index} />
+        }
+      })}
+    </div>
+  )
+}
+
+export const RenderBlock: React.FC<{
+  block: (NonNullable<Page['layout']>)[number]
+}> = (props) => {
+  const { block } = props
+  const { blockType } = block
+
+  if (!inclusionsCondition(block)) {
+    return null
+  }
+
+  switch (blockType) {
+    case 'archive':
+      return <ArchiveBlock {...block} />
+    case 'cta':
+      return <CallToAction {...block} />
+    case 'carousel':
+      return <Carousel {...block} />
+    case 'content':
+      return <Content {...block} />
+    case 'flightsTable':
+      return <FlightsTable {...block} />
+    case 'formBlock':
+      return <Form {...block as unknown as Parameters<typeof Form>[0]} />
+    case 'infoCards':
+      return <InfoCards {...block} />
+    case 'latestNews':
+      return <LatestNews {...block} />
+    case 'logoCarousel':
+      return <LogoCarousel {...block} />
+    case 'mediaBlock':
+      return <MediaBlock {...block} />
+    case 'testimonial':
+      return <TestimonialBlock {...block} />
+    case 'gallery':
+      return <GalleryBlock {...block} />
+    case 'contact':
+      return <ContactBlock {...block} />
+    case 'faq':
+      return <FAQBlock {...block} />
+    default:
+      return <LoadingBlock />
+  }
 }

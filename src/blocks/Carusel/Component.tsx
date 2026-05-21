@@ -232,3 +232,4 @@ export const CarouselBlock: React.FC<Props> = (props) => {
     </section>
   )
 }
+export default CarouselBlock

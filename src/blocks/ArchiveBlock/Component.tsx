@@ -8,7 +8,7 @@ import RichText from '@/components/RichText'
 import { CollectionArchive } from '@/components/CollectionArchive'
 
 type Props = ArchiveBlockProps & {
-  id?: string
+  id?: string | null
 }
 
 export const ArchiveBlock = async (props: Props) => {
@@ -67,3 +67,4 @@ export const ArchiveBlock = async (props: Props) => {
     </div>
   )
 }
+export default ArchiveBlock

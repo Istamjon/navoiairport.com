@@ -12,22 +12,22 @@ import { fields } from './fields'
 import { getClientSideURL } from '@/utilities/getURL'
 
 export type FormBlockType = {
-  blockName?: string
+  blockName?: string | null
   blockType?: 'formBlock'
-  enableIntro: boolean
+  enableIntro?: boolean | null
   form: FormType
   introContent?: DefaultTypedEditorState
 }
 
 export const FormBlock: React.FC<
   {
-    id?: string
+    id?: string | null
   } & FormBlockType
 > = (props) => {
   const {
     enableIntro,
     form: formFromProps,
-    form: { id: formID, confirmationMessage, confirmationType, redirect, submitButtonLabel } = {},
+    form: { id: formID, confirmationMessage, confirmationType, redirect, submitButtonLabel } = {} as FormType,
     introContent,
   } = props
 
@@ -161,3 +161,4 @@ export const FormBlock: React.FC<
     </div>
   )
 }
+export default FormBlock

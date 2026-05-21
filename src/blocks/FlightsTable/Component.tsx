@@ -20,23 +20,23 @@ import {
 } from 'lucide-react'
 
 interface FlightsTableBlockProps {
-  headline?: string
-  title?: string
-  subtitle?: string
-  departuresLabel?: string
-  arrivalsLabel?: string
+  headline?: string | null
+  title?: string | null
+  subtitle?: string | null
+  departuresLabel?: string | null
+  arrivalsLabel?: string | null
   tableHeaders?: {
-    time?: string
-    destination?: string
-    flight?: string
-    airline?: string
-    terminal?: string
-    gate?: string
-    status?: string
-  }
-  airportIata?: string
-  refreshInterval?: number
-  locale?: 'uz' | 'en' | 'ru' | 'zh'
+    time?: string | null
+    destination?: string | null
+    flight?: string | null
+    airline?: string | null
+    terminal?: string | null
+    gate?: string | null
+    status?: string | null
+  } | null
+  airportIata?: string | null
+  refreshInterval?: number | null
+  locale?: 'uz' | 'en' | 'ru' | 'zh' | null
 }
 
 type Props = {
@@ -664,7 +664,7 @@ export const FlightsTableBlock: React.FC<Props> = ({
 
   useEffect(() => {
     fetchFlights()
-    const interval = setInterval(() => fetchFlights(true), refreshInterval * 1000)
+    const interval = setInterval(() => fetchFlights(true), (refreshInterval ?? 120) * 1000)
     return () => clearInterval(interval)
   }, [fetchFlights, refreshInterval])
 
@@ -1075,3 +1075,4 @@ export const FlightsTableBlock: React.FC<Props> = ({
     </section>
   )
 }
+export default FlightsTableBlock

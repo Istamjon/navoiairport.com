@@ -30,3 +30,4 @@ export const RelatedPosts: React.FC<RelatedPostsProps> = (props) => {
     </div>
   )
 }
+export default RelatedPosts

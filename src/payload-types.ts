@@ -234,12 +234,20 @@ export interface Page {
            * Optional URL for the logo link
            */
           link?: string | null;
+          /**
+           * Open link in new tab
+           */
+          newTab?: boolean | null;
           id?: string | null;
         }[];
         id?: string | null;
         blockName?: string | null;
         blockType: 'logoCarousel';
       }
+    | TestimonialBlock
+    | GalleryBlock
+    | ContactBlock
+    | FAQBlock
   )[];
   meta?: {
     title?: string | null;
@@ -582,6 +590,7 @@ export interface ContentBlock {
           };
           [k: string]: unknown;
         } | null;
+        image?: (number | null) | Media;
         enableLink?: boolean | null;
         link?: {
           type?: ('reference' | 'custom') | null;
@@ -993,6 +1002,98 @@ export interface InfoCardsBlock {
   id?: string | null;
   blockName?: string | null;
   blockType: 'infoCards';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TestimonialBlock".
+ */
+export interface TestimonialBlock {
+  quote: string;
+  author: string;
+  role?: string | null;
+  company?: string | null;
+  avatar?: (number | null) | Media;
+  rating?: ('1' | '2' | '3' | '4' | '5') | null;
+  layout?: ('centered' | 'left' | 'card') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'testimonial';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "GalleryBlock".
+ */
+export interface GalleryBlock {
+  title?: string | null;
+  subtitle?: string | null;
+  images?:
+    | {
+        image: number | Media;
+        caption?: string | null;
+        description?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  layout?: ('grid' | 'masonry' | 'slider') | null;
+  columns?: ('2' | '3' | '4' | '5') | null;
+  enableLightbox?: boolean | null;
+  showCaptions?: boolean | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'gallery';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ContactBlock".
+ */
+export interface ContactBlock {
+  title?: string | null;
+  subtitle?: string | null;
+  contactInfo?:
+    | {
+        type: 'email' | 'phone' | 'address' | 'social';
+        label: string;
+        value: string;
+        icon?: string | null;
+        link?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  formFields?:
+    | {
+        fieldType: 'text' | 'email' | 'textarea' | 'select' | 'checkbox';
+        label: string;
+        name: string;
+        placeholder?: string | null;
+        required?: boolean | null;
+        id?: string | null;
+      }[]
+    | null;
+  showMap?: boolean | null;
+  mapEmbedCode?: string | null;
+  layout?: ('split' | 'form-first' | 'info-first') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'contact';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "FAQBlock".
+ */
+export interface FAQBlock {
+  title?: string | null;
+  description?: string | null;
+  questions?:
+    | {
+        question: string;
+        answer: string;
+        defaultOpen?: boolean | null;
+        id?: string | null;
+      }[]
+    | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'faq';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1644,11 +1745,16 @@ export interface PagesSelect<T extends boolean = true> {
                 | {
                     logo?: T;
                     link?: T;
+                    newTab?: T;
                     id?: T;
                   };
               id?: T;
               blockName?: T;
             };
+        testimonial?: T | TestimonialBlockSelect<T>;
+        gallery?: T | GalleryBlockSelect<T>;
+        contact?: T | ContactBlockSelect<T>;
+        faq?: T | FAQBlockSelect<T>;
       };
   meta?:
     | T
@@ -1707,6 +1813,7 @@ export interface ContentBlockSelect<T extends boolean = true> {
     | {
         size?: T;
         richText?: T;
+        image?: T;
         enableLink?: T;
         link?:
           | T
@@ -1867,6 +1974,94 @@ export interface InfoCardsBlockSelect<T extends boolean = true> {
               url?: T;
             };
         style?: T;
+        id?: T;
+      };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TestimonialBlock_select".
+ */
+export interface TestimonialBlockSelect<T extends boolean = true> {
+  quote?: T;
+  author?: T;
+  role?: T;
+  company?: T;
+  avatar?: T;
+  rating?: T;
+  layout?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "GalleryBlock_select".
+ */
+export interface GalleryBlockSelect<T extends boolean = true> {
+  title?: T;
+  subtitle?: T;
+  images?:
+    | T
+    | {
+        image?: T;
+        caption?: T;
+        description?: T;
+        id?: T;
+      };
+  layout?: T;
+  columns?: T;
+  enableLightbox?: T;
+  showCaptions?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ContactBlock_select".
+ */
+export interface ContactBlockSelect<T extends boolean = true> {
+  title?: T;
+  subtitle?: T;
+  contactInfo?:
+    | T
+    | {
+        type?: T;
+        label?: T;
+        value?: T;
+        icon?: T;
+        link?: T;
+        id?: T;
+      };
+  formFields?:
+    | T
+    | {
+        fieldType?: T;
+        label?: T;
+        name?: T;
+        placeholder?: T;
+        required?: T;
+        id?: T;
+      };
+  showMap?: T;
+  mapEmbedCode?: T;
+  layout?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "FAQBlock_select".
+ */
+export interface FAQBlockSelect<T extends boolean = true> {
+  title?: T;
+  description?: T;
+  questions?:
+    | T
+    | {
+        question?: T;
+        answer?: T;
+        defaultOpen?: T;
         id?: T;
       };
   id?: T;

@@ -7,13 +7,14 @@ import { motion } from 'framer-motion'
 
 export type LogoCarouselProps = {
   blockType: 'logoCarousel'
-  backgroundColor?: 'white' | 'gray'
-  speed?: number
+  backgroundColor?: 'white' | 'gray' | null
+  speed?: number | null
   logos?: Array<{
     logo: any
-    link?: string
-    id?: string
-  }>
+    link?: string | null
+    newTab?: boolean | null
+    id?: string | null
+  } | null>
 }
 
 export const LogoCarouselComponent: React.FC<LogoCarouselProps> = ({
@@ -40,10 +41,11 @@ export const LogoCarouselComponent: React.FC<LogoCarouselProps> = ({
           transition={{
             repeat: Infinity,
             ease: 'linear',
-            duration: speed * 2, // Doubled because we have 4 sets instead of 2, so it travels further
+            duration: (speed ?? 30) * 2,
           }}
         >
           {duplicatedLogos.map((item, index) => {
+            if (!item) return null
             const hasLink = Boolean(item.link)
 
             const MediaElement = (
@@ -64,7 +66,7 @@ export const LogoCarouselComponent: React.FC<LogoCarouselProps> = ({
                 className="flex-shrink-0 px-4 sm:px-6 md:px-8 lg:px-10" // Horizontal padding acts as the gap, ensuring seamless loop calculations
               >
                 {hasLink ? (
-                  <Link href={item.link as string} target="_blank" rel="noopener noreferrer">
+                  <Link href={item.link as string} target={item.newTab !== false ? '_blank' : '_self'} rel={item.newTab !== false ? 'noopener noreferrer' : undefined}>
                     {MediaElement}
                   </Link>
                 ) : (
@@ -78,3 +80,4 @@ export const LogoCarouselComponent: React.FC<LogoCarouselProps> = ({
     </div>
   )
 }
+export default LogoCarouselComponent

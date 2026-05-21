@@ -135,7 +135,7 @@ export default buildConfig({
       ],
     },
   },
-  // This config helps us configure global or default features that the other editors can inherit
+  // Update the editor configuration to not conflict with individual field configurations
   editor: defaultLexical,
   db: postgresAdapter({
     pool: {

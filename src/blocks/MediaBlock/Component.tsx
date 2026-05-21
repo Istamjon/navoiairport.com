@@ -65,3 +65,4 @@ export const MediaBlock: React.FC<Props> = (props) => {
     </div>
   )
 }
+export default MediaBlock

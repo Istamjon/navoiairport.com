@@ -19,3 +19,4 @@ export const CodeBlock: React.FC<Props> = ({ className, code, language }) => {
     </div>
   )
 }
+export default CodeBlock

@@ -131,3 +131,4 @@ export const InfoCardsComponent: React.FC<InfoCardsBlock> = ({ title, subtitle, 
     </section>
   )
 }
+export default InfoCardsComponent

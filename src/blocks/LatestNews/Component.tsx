@@ -375,3 +375,4 @@ export const LatestNewsBlock: React.FC<Props> = (props) => {
     </section>
   )
 }
+export default LatestNewsBlock

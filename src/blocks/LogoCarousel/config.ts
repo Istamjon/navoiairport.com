@@ -82,6 +82,24 @@ export const LogoCarousel: Block = {
             uz: 'Havola URL',
           },
         },
+        {
+          name: 'newTab',
+          type: 'checkbox',
+          defaultValue: true,
+          admin: {
+            condition: (_, siblingData) => Boolean(siblingData?.link),
+            description: {
+              en: 'Open link in new tab',
+              ru: 'Открывать ссылку в новой вкладке',
+              uz: 'Havolani yangi oynada ochish',
+            },
+          },
+          label: {
+            en: 'Open in new tab',
+            ru: 'Открывать в новой вкладке',
+            uz: 'Yangi oynada ochish',
+          },
+        },
       ],
     },
   ],
