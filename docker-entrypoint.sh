@@ -38,8 +38,7 @@ if [ "$TABLE_EXISTS" = "t" ]; then
       ('20260317_191617_localization_fix'),
       ('20260317_191943_finalize_localization'),
       ('20260317_192533_fix_hero_localization'),
-      ('20260317_192941_fix_hero_localization_final_v2'),
-      ('20260521_201101')
+      ('20260317_192941_fix_hero_localization_final_v2')
     ) AS m(name)
     WHERE NOT EXISTS (SELECT 1 FROM payload_migrations pm WHERE pm.name = m.name);
   " 2>/dev/null || true
