@@ -167,7 +167,7 @@ export async function up({ db, payload }: MigrateUpArgs): Promise<void> {
     `ALTER TABLE "header_nav_items" ADD COLUMN IF NOT EXISTS "_locale" "_locales" NOT NULL DEFAULT 'uz'`,
     `ALTER TABLE "header_rels" ADD COLUMN IF NOT EXISTS "locale" "_locales"`,
     `ALTER TABLE "footer_nav_items" ADD COLUMN IF NOT EXISTS "_locale" "_locales" NOT NULL DEFAULT 'uz'`,
-    `ALTER TABLE "footer_rels" ADD COLUMN IF NOT EXISTS "locale" "_locales`,
+    `ALTER TABLE "footer_rels" ADD COLUMN IF NOT EXISTS "locale" "_locales"`,
 
     // --- payload_locked_documents / payload_preferences rels ---
     `ALTER TABLE "payload_locked_documents_rels" ADD COLUMN IF NOT EXISTS "payload_mcp_api_keys_id" integer`,
