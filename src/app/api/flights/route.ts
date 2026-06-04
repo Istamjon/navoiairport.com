@@ -139,7 +139,7 @@ async function fetchAirportSchedules(airportIata: string): Promise<CachedData> {
   // IMPORTANT:
   //  1. Use raw bracket syntax [] — URL-encoded %5B%5D triggers Cloudflare Managed Challenge
   //  2. Use curl as subprocess — Node.js TLS fingerprint (JA3/JA4) is flagged by Cloudflare
-  const rawUrl = `https://api.flightradar24.com/common/v1/airport.json?code=${airport}&plugin[]=&plugin-setting[schedule][mode]=&plugin-setting[schedule][timestamp]=${timestamp}&page=1&limit=100&fleet=&token=`
+  const rawUrl = `https://api.flightradar224.com/common/v1/airport.json?code=${airport}&plugin[]=&plugin-setting[schedule][mode]=&plugin-setting[schedule][timestamp]=${timestamp}&page=1&limit=100&fleet=&token=`
 
   const stdout = await fetchViaCurl(rawUrl)
   const json = JSON.parse(stdout) as {
