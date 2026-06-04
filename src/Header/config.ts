@@ -10,6 +10,15 @@ export const Header: GlobalConfig = {
   },
   fields: [
     {
+      name: 'logo',
+      type: 'upload',
+      relationTo: 'media',
+      label: 'Site Logo',
+      admin: {
+        description: 'Upload your site logo (SVG or PNG recommended). Will be displayed in the header.',
+      },
+    },
+    {
       name: 'navItems',
       type: 'array',
       localized: true,

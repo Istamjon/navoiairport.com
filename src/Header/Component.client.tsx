@@ -68,7 +68,7 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data }) => {
         <div className="container flex items-center justify-between h-[60px] text-white">
           {/* Logo */}
           <Link href="/" aria-label="Navoi International Airport">
-            <Logo loading="eager" priority="high" className="    h-7 w-auto" />
+            <Logo loading="eager" priority="high" className="    h-7 w-auto" logo={data?.logo} />
           </Link>
 
           {/* Desktop Nav */}
@@ -123,6 +123,7 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data }) => {
                     loading="eager"
                     priority="high"
                     className="  h-8 w-auto"
+                    logo={data?.logo}
                   />
                   <motion.button
                     onClick={() => setMobileMenuOpen(false)}
