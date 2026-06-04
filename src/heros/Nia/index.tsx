@@ -1,6 +1,7 @@
 'use client'
 
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { useHeaderTheme } from '@/providers/HeaderTheme'
 import type { Media as MediaType } from '@/payload-types'
 import { Media } from '@/components/Media'
@@ -158,7 +159,22 @@ const DatePicker: React.FC<{
   const [open, setOpen] = useState(false)
   const [focused, setFocused] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
-  const containerRef = useRef<HTMLDivElement>(null)
+  const [popoverPos, setPopoverPos] = useState<{ top: number; left: number } | null>(null)
+  const triggerRef = useRef<HTMLDivElement>(null)
+  const popoverRef = useRef<HTMLDivElement>(null)
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 639px)')
+    const onChangeMq = (e: MediaQueryListEvent) => setIsMobile(e.matches)
+    setIsMobile(mq.matches)
+    mq.addEventListener('change', onChangeMq)
+    return () => mq.removeEventListener('change', onChangeMq)
+  }, [])
 
   const selected = parseYMD(date)
   const today = new Date()
@@ -169,19 +185,31 @@ const DatePicker: React.FC<{
   const [viewMonth, setViewMonth] = useState(initialView.getMonth())
 
   useEffect(() => {
-    const mq = window.matchMedia('(max-width: 639px)')
-    const onChangeMq = (e: MediaQueryListEvent) => setIsMobile(e.matches)
-    setIsMobile(mq.matches)
-    mq.addEventListener('change', onChangeMq)
-    return () => mq.removeEventListener('change', onChangeMq)
-  }, [])
-
-  useEffect(() => {
     if (selected) {
       setViewYear(selected.getFullYear())
       setViewMonth(selected.getMonth())
     }
   }, [date])
+
+  // Calculate popover position based on trigger's bounding rect
+  useLayoutEffect(() => {
+    if (!open || isMobile) {
+      setPopoverPos(null)
+      return
+    }
+    const updatePos = () => {
+      if (!triggerRef.current) return
+      const rect = triggerRef.current.getBoundingClientRect()
+      setPopoverPos({ top: rect.bottom + 8, left: rect.left })
+    }
+    updatePos()
+    window.addEventListener('scroll', updatePos, true)
+    window.addEventListener('resize', updatePos)
+    return () => {
+      window.removeEventListener('scroll', updatePos, true)
+      window.removeEventListener('resize', updatePos)
+    }
+  }, [open, isMobile])
 
   useEffect(() => {
     if (!open) return
@@ -193,7 +221,11 @@ const DatePicker: React.FC<{
       }
     }
     const handleClickOutside = (e: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+      const target = e.target as Node
+      if (
+        triggerRef.current && !triggerRef.current.contains(target) &&
+        popoverRef.current && !popoverRef.current.contains(target)
+      ) {
         setOpen(false)
       }
     }
@@ -258,14 +290,22 @@ const DatePicker: React.FC<{
   const isToday = (d: Date | null) =>
     !!d && d.getFullYear() === today.getFullYear() && d.getMonth() === today.getMonth() && d.getDate() === today.getDate()
 
-  const calendar = (
+  const calendarNode = (
     <div
+      ref={popoverRef}
       role="dialog"
       aria-label={DATE_PLACEHOLDERS[lang] || DATE_PLACEHOLDERS.uz}
+      style={
+        isMobile
+          ? undefined
+          : popoverPos
+            ? { top: popoverPos.top, left: popoverPos.left }
+            : { top: -9999, left: -9999, visibility: 'hidden' }
+      }
       className={
         isMobile
-          ? 'fixed inset-0 z-[100] bg-white flex flex-col'
-          : 'absolute top-full left-0 mt-2 z-50 bg-white rounded-md shadow-lg border border-gray-200 p-3 w-[18rem]'
+          ? 'fixed inset-0 z-[2147483647] bg-white flex flex-col'
+          : 'fixed z-[2147483647] bg-white rounded-md shadow-lg border border-gray-200 p-3 w-[18rem]'
       }
     >
       <div className={`flex items-center justify-between ${isMobile ? 'p-3 border-b border-gray-200' : 'mb-2'}`}>
@@ -348,9 +388,10 @@ const DatePicker: React.FC<{
   )
 
   return (
-    <div ref={containerRef} className="relative">
+    <div className="relative">
       <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-gray-400 pointer-events-none z-10" />
       <div
+        ref={triggerRef}
         onClick={() => setOpen((o) => !o)}
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
@@ -371,7 +412,7 @@ const DatePicker: React.FC<{
         {displayDate || DATE_PLACEHOLDERS[lang] || DATE_PLACEHOLDERS.uz}
       </div>
 
-      {open && calendar}
+      {open && mounted && createPortal(calendarNode, document.body)}
     </div>
   )
 }
