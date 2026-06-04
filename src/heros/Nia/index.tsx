@@ -98,19 +98,43 @@ const DatePicker: React.FC<{
   date: string
   onChange: (val: string) => void
 }> = ({ lang, date, onChange }) => {
+  const inputRef = useRef<HTMLInputElement>(null)
   const [focused, setFocused] = useState(false)
 
   const displayDate = date
     ? new Intl.DateTimeFormat(lang, DATE_FORMATS[lang] || DATE_FORMATS.uz).format(new Date(date + 'T00:00:00'))
     : ''
 
+  const openPicker = useCallback(() => {
+    if (!inputRef.current) return
+    try {
+      inputRef.current.showPicker()
+    } catch {
+      inputRef.current.focus()
+      inputRef.current.click()
+      // On some mobile browsers, after click() the picker opens automatically,
+      // on others we try dispatching a mousedown event as a last resort
+      try {
+        inputRef.current.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }))
+      } catch {
+        // ignore
+      }
+    }
+  }, [])
+
   return (
     <div className="relative">
       <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-gray-400 pointer-events-none z-10" />
       <div
+        onClick={openPicker}
+        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') openPicker() }}
+        tabIndex={0}
+        role="button"
+        aria-label={DATE_PLACEHOLDERS[lang] || DATE_PLACEHOLDERS.uz}
+        lang={lang}
         className={`
-          pointer-events-none rounded-md w-full h-11 pl-9 pr-3 text-sm flex items-center
-          transition-colors
+          rounded-md w-full h-11 pl-9 pr-3 text-sm flex items-center
+          transition-colors cursor-pointer select-none
           ${displayDate ? 'text-primary' : 'text-gray-400'}
           ${focused ? 'border-[#0a1628] ring-1 ring-[#0a1628]' : 'border-gray-400'}
           border
@@ -119,14 +143,17 @@ const DatePicker: React.FC<{
         {displayDate || DATE_PLACEHOLDERS[lang] || DATE_PLACEHOLDERS.uz}
       </div>
       <input
+        ref={inputRef}
         type="date"
         value={date}
         onChange={(e) => onChange(e.target.value)}
         lang={lang}
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
-        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-        style={{ zIndex: 20 }}
+        className="absolute inset-0 w-full h-full opacity-0"
+        style={{ zIndex: 20, pointerEvents: 'none' }}
+        readOnly
+        tabIndex={-1}
       />
     </div>
   )
