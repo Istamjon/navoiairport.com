@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { useHeaderTheme } from '@/providers/HeaderTheme'
 import type { Media as MediaType } from '@/payload-types'
 import { Media } from '@/components/Media'
@@ -36,6 +36,119 @@ const extractYouTubeVideoId = (url: string): string | null => {
   return null
 }
 
+// ─── Flight Search Labels Dictionary ──────────────────────────────────────────
+const FLIGHT_DICT: Record<string, FlightSearchLabels> = {
+  uz: {
+    departureTab: 'UCHIB KETISH',
+    arrivalTab: "QO'NIB KELISH",
+    destinationLabel: 'Qayerga',
+    originLabel: 'Qayerdan',
+    destinationPlaceholder: 'Shahar yoki aeroport',
+    dateLabel: 'Sana',
+    searchButton: 'QIDIRISH',
+  },
+  ru: {
+    departureTab: 'ВЫЛЕТ',
+    arrivalTab: 'ПРИЛЁТ',
+    destinationLabel: 'Куда',
+    originLabel: 'Откуда',
+    destinationPlaceholder: 'Город или аэропорт',
+    dateLabel: 'Дата',
+    searchButton: 'ПОИСК',
+  },
+  en: {
+    departureTab: 'DEPARTURE',
+    arrivalTab: 'ARRIVAL',
+    destinationLabel: 'Where to',
+    originLabel: 'Where from',
+    destinationPlaceholder: 'City or airport',
+    dateLabel: 'Date',
+    searchButton: 'SEARCH',
+  },
+  zh: {
+    departureTab: '出发',
+    arrivalTab: '到达',
+    destinationLabel: '目的地',
+    originLabel: '出发地',
+    destinationPlaceholder: '城市或机场',
+    dateLabel: '日期',
+    searchButton: '搜索',
+  },
+}
+
+const getFlightLabels = (lang: string): FlightSearchLabels => FLIGHT_DICT[lang] || FLIGHT_DICT.uz
+
+// ─── Locale-aware Date Picker ──────────────────────────────────────────────────
+const DATE_FORMATS: Record<string, Intl.DateTimeFormatOptions> = {
+  uz: { day: 'numeric', month: 'long', year: 'numeric' },
+  ru: { day: 'numeric', month: 'long', year: 'numeric' },
+  en: { day: 'numeric', month: 'long', year: 'numeric' },
+  zh: { year: 'numeric', month: 'long', day: 'numeric' },
+}
+
+const DATE_PLACEHOLDERS: Record<string, string> = {
+  uz: 'Sanani tanlang',
+  ru: 'Выберите дату',
+  en: 'Select date',
+  zh: '选择日期',
+}
+
+const DatePicker: React.FC<{
+  lang: string
+  date: string
+  onChange: (val: string) => void
+}> = ({ lang, date, onChange }) => {
+  const hiddenRef = useRef<HTMLInputElement>(null)
+  const [focused, setFocused] = useState(false)
+
+  const displayDate = date
+    ? new Intl.DateTimeFormat(lang, DATE_FORMATS[lang] || DATE_FORMATS.uz).format(new Date(date + 'T00:00:00'))
+    : ''
+
+  const handleClick = useCallback(() => {
+    hiddenRef.current?.showPicker()
+  }, [])
+
+  const handleNativeChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      onChange(e.target.value)
+    },
+    [onChange],
+  )
+
+  return (
+    <div className="relative">
+      <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-gray-400 pointer-events-none z-10" />
+      <input
+        ref={hiddenRef}
+        type="date"
+        value={date}
+        onChange={handleNativeChange}
+        lang={lang}
+        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-0"
+        aria-hidden
+      />
+      <div
+        onClick={handleClick}
+        onFocus={() => setFocused(true)}
+        onBlur={() => setFocused(false)}
+        tabIndex={0}
+        role="button"
+        lang={lang}
+        className={`
+          rounded-md w-full h-11 pl-9 pr-3 text-sm flex items-center
+          transition-colors cursor-pointer select-none
+          ${displayDate ? 'text-primary' : 'text-gray-400'}
+          ${focused ? 'border-[#0a1628] ring-1 ring-[#0a1628]' : 'border-gray-400'}
+          border
+        `}
+      >
+        {displayDate || DATE_PLACEHOLDERS[lang] || DATE_PLACEHOLDERS.uz}
+      </div>
+    </div>
+  )
+}
+
 // ─── Flight Search Block ──────────────────────────────────────────────────────
 interface FlightSearchLabels {
   departureTab: string
@@ -47,10 +160,16 @@ interface FlightSearchLabels {
   searchButton: string
 }
 
-const FlightSearchBlock: React.FC<{ labels?: FlightSearchLabels }> = ({ labels }) => {
+const FlightSearchBlock: React.FC = () => {
   const [tab, setTab] = useState<'departure' | 'arrival'>('departure')
   const [destination, setDestination] = useState('')
   const [date, setDate] = useState('')
+  const [lang, setLang] = useState('uz')
+
+  useEffect(() => {
+    const match = document.cookie.match(/(^| )payload-locale=([^;]+)/)
+    if (match?.[2]) setLang(match[2])
+  }, [])
 
   // Mapping city names to IATA codes for booking URL
   const CITY_MAP: Record<string, string> = {
@@ -82,18 +201,7 @@ const FlightSearchBlock: React.FC<{ labels?: FlightSearchLabels }> = ({ labels }
     }
   }
 
-  // Default labels (Uzbek)
-  const defaultLabels: FlightSearchLabels = {
-    departureTab: 'UCHIB KETISH',
-    arrivalTab: "QO'NIB KELISH",
-    destinationLabel: 'Qayerga',
-    originLabel: 'Qayerdan',
-    destinationPlaceholder: 'Shahar yoki aeroport',
-    dateLabel: 'Sana',
-    searchButton: 'QIDIRISH',
-  }
-
-  const t = labels || defaultLabels
+  const t = getFlightLabels(lang)
 
   return (
     <motion.div
@@ -192,16 +300,7 @@ const FlightSearchBlock: React.FC<{ labels?: FlightSearchLabels }> = ({ labels }
           <label className="block text-[10px] font-semibold text-gray-500 tracking-widest uppercase mb-1.5">
             {t.dateLabel}
           </label>
-          <div className="relative">
-            <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-gray-400 pointer-events-none" />
-            <motion.input
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              whileFocus={{ borderColor: '#0a1628' }}
-              className="rounded-md w-full h-11 pl-9 pr-3 text-sm text-primary border border-gray-400 focus:border-[#0a1628] focus:outline-none transition-colors appearance-none"
-            />
-          </div>
+          <DatePicker lang={lang} date={date} onChange={setDate} />
         </motion.div>
 
         {/* Submit */}
@@ -234,26 +333,12 @@ export const NiaHero: React.FC<{
   backgroundType?: 'images' | 'video'
   slideshowImages?: MediaType[]
   youtubeVideoUrl?: string | null
-  departureTab?: string
-  arrivalTab?: string
-  destinationLabel?: string
-  originLabel?: string
-  destinationPlaceholder?: string
-  dateLabel?: string
-  searchButton?: string
 }> = ({
   media,
   richText,
   backgroundType = 'images',
   slideshowImages,
   youtubeVideoUrl,
-  departureTab,
-  arrivalTab,
-  destinationLabel,
-  originLabel,
-  destinationPlaceholder,
-  dateLabel,
-  searchButton,
 }) => {
   const { setHeaderTheme } = useHeaderTheme()
   const [mounted, setMounted] = useState(false)
@@ -418,17 +503,7 @@ export const NiaHero: React.FC<{
               mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8',
             )}
           >
-            <FlightSearchBlock
-              labels={{
-                departureTab: departureTab || 'UCHIB KETISH',
-                arrivalTab: arrivalTab || "QO'NIB KELISH",
-                destinationLabel: destinationLabel || 'Qayerga',
-                originLabel: originLabel || 'Qayerdan',
-                destinationPlaceholder: destinationPlaceholder || 'Shahar yoki aeroport',
-                dateLabel: dateLabel || 'Sana',
-                searchButton: searchButton || 'QIDIRISH',
-              }}
-            />
+            <FlightSearchBlock />
           </div>
         </div>
       </div>
