@@ -157,6 +157,7 @@ const DatePicker: React.FC<{
 }> = ({ lang, date, onChange }) => {
   const [open, setOpen] = useState(false)
   const [focused, setFocused] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
 
   const selected = parseYMD(date)
@@ -168,6 +169,14 @@ const DatePicker: React.FC<{
   const [viewMonth, setViewMonth] = useState(initialView.getMonth())
 
   useEffect(() => {
+    const mq = window.matchMedia('(max-width: 639px)')
+    const onChangeMq = (e: MediaQueryListEvent) => setIsMobile(e.matches)
+    setIsMobile(mq.matches)
+    mq.addEventListener('change', onChangeMq)
+    return () => mq.removeEventListener('change', onChangeMq)
+  }, [])
+
+  useEffect(() => {
     if (selected) {
       setViewYear(selected.getFullYear())
       setViewMonth(selected.getMonth())
@@ -176,6 +185,13 @@ const DatePicker: React.FC<{
 
   useEffect(() => {
     if (!open) return
+    if (isMobile) {
+      const prev = document.body.style.overflow
+      document.body.style.overflow = 'hidden'
+      return () => {
+        document.body.style.overflow = prev
+      }
+    }
     const handleClickOutside = (e: MouseEvent) => {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
         setOpen(false)
@@ -183,6 +199,15 @@ const DatePicker: React.FC<{
     }
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [open, isMobile])
+
+  useEffect(() => {
+    if (!open) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setOpen(false)
+    }
+    document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
   }, [open])
 
   const nav = NAV_LABELS[lang] || NAV_LABELS.uz
@@ -208,9 +233,13 @@ const DatePicker: React.FC<{
       setViewMonth(viewMonth + 1)
     }
   }
+  const goToday = () => {
+    const t = new Date()
+    setViewYear(t.getFullYear())
+    setViewMonth(t.getMonth())
+  }
 
   const firstDay = new Date(viewYear, viewMonth, 1)
-  // Convert Sunday=0 to Monday=0 (start of week)
   const startOffset = (firstDay.getDay() + 6) % 7
   const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate()
   const cells: (Date | null)[] = []
@@ -224,10 +253,99 @@ const DatePicker: React.FC<{
   }
 
   const isSelected = (d: Date | null) =>
-    d && selected && d.getFullYear() === selected.getFullYear() && d.getMonth() === selected.getMonth() && d.getDate() === selected.getDate()
+    !!d && !!selected && d.getFullYear() === selected.getFullYear() && d.getMonth() === selected.getMonth() && d.getDate() === selected.getDate()
 
   const isToday = (d: Date | null) =>
-    d && d.getFullYear() === today.getFullYear() && d.getMonth() === today.getMonth() && d.getDate() === today.getDate()
+    !!d && d.getFullYear() === today.getFullYear() && d.getMonth() === today.getMonth() && d.getDate() === today.getDate()
+
+  const calendar = (
+    <div
+      role="dialog"
+      aria-label={DATE_PLACEHOLDERS[lang] || DATE_PLACEHOLDERS.uz}
+      className={
+        isMobile
+          ? 'fixed inset-0 z-[100] bg-white flex flex-col'
+          : 'absolute top-full left-0 mt-2 z-50 bg-white rounded-md shadow-lg border border-gray-200 p-3 w-[18rem]'
+      }
+    >
+      <div className={`flex items-center justify-between ${isMobile ? 'p-3 border-b border-gray-200' : 'mb-2'}`}>
+        <button
+          type="button"
+          onClick={goPrev}
+          aria-label={nav.prev}
+          className="p-2 sm:p-1.5 rounded hover:bg-gray-100 active:bg-gray-200 text-gray-700 min-w-[44px] min-h-[44px] sm:min-w-0 sm:min-h-0 flex items-center justify-center"
+        >
+          <svg className="size-5 sm:size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <polyline points="15 18 9 12 15 6" />
+          </svg>
+        </button>
+        <div className="text-base sm:text-sm font-semibold text-primary" lang={lang}>
+          {nav.months[viewMonth]} {viewYear}
+        </div>
+        <button
+          type="button"
+          onClick={goNext}
+          aria-label={nav.next}
+          className="p-2 sm:p-1.5 rounded hover:bg-gray-100 active:bg-gray-200 text-gray-700 min-w-[44px] min-h-[44px] sm:min-w-0 sm:min-h-0 flex items-center justify-center"
+        >
+          <svg className="size-5 sm:size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <polyline points="9 18 15 12 9 6" />
+          </svg>
+        </button>
+      </div>
+
+      <div className={`grid grid-cols-7 gap-1 ${isMobile ? 'px-3' : 'mb-1'}`}>
+        {weekdays.map((wd) => (
+          <div
+            key={wd}
+            className="text-center text-[10px] sm:text-[10px] font-semibold text-gray-500 uppercase tracking-wider py-1"
+            lang={lang}
+          >
+            {wd}
+          </div>
+        ))}
+      </div>
+
+      <div className={`grid grid-cols-7 gap-1 ${isMobile ? 'px-3 pb-3 flex-1 content-start' : ''}`}>
+        {cells.map((d, i) => (
+          <button
+            key={i}
+            type="button"
+            disabled={!d}
+            onClick={() => d && handleSelect(d)}
+            className={`
+              ${isMobile ? 'h-12 w-12' : 'h-8 w-8'} text-sm rounded-full flex items-center justify-center transition-colors mx-auto
+              ${!d ? 'invisible' : ''}
+              ${isSelected(d) ? 'bg-primary text-white font-bold' : ''}
+              ${!isSelected(d) && isToday(d) ? 'border-2 border-primary text-primary font-semibold' : ''}
+              ${!isSelected(d) && !isToday(d) ? 'text-gray-700 hover:bg-gray-100 active:bg-gray-200' : ''}
+            `}
+          >
+            {d?.getDate()}
+          </button>
+        ))}
+      </div>
+
+      {isMobile && (
+        <div className="border-t border-gray-200 p-3 flex gap-2">
+          <button
+            type="button"
+            onClick={() => setOpen(false)}
+            className="flex-1 h-11 rounded-md border border-gray-300 text-sm font-semibold text-gray-700 active:bg-gray-100"
+          >
+            {lang === 'uz' ? 'Bekor qilish' : lang === 'ru' ? 'Отмена' : lang === 'zh' ? '取消' : 'Cancel'}
+          </button>
+          <button
+            type="button"
+            onClick={goToday}
+            className="flex-1 h-11 rounded-md border border-primary text-sm font-semibold text-primary active:bg-primary/10"
+          >
+            {lang === 'uz' ? 'Bugun' : lang === 'ru' ? 'Сегодня' : lang === 'zh' ? '今天' : 'Today'}
+          </button>
+        </div>
+      )}
+    </div>
+  )
 
   return (
     <div ref={containerRef} className="relative">
@@ -253,67 +371,7 @@ const DatePicker: React.FC<{
         {displayDate || DATE_PLACEHOLDERS[lang] || DATE_PLACEHOLDERS.uz}
       </div>
 
-      {open && (
-        <div
-          role="dialog"
-          aria-label={DATE_PLACEHOLDERS[lang] || DATE_PLACEHOLDERS.uz}
-          className="absolute top-full left-0 mt-2 z-50 bg-white rounded-md shadow-lg border border-gray-200 p-3 w-72"
-        >
-          <div className="flex items-center justify-between mb-2">
-            <button
-              type="button"
-              onClick={goPrev}
-              aria-label={nav.prev}
-              className="p-1.5 rounded hover:bg-gray-100 text-gray-700"
-            >
-              <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <polyline points="15 18 9 12 15 6" />
-              </svg>
-            </button>
-            <div className="text-sm font-semibold text-primary" lang={lang}>
-              {nav.months[viewMonth]} {viewYear}
-            </div>
-            <button
-              type="button"
-              onClick={goNext}
-              aria-label={nav.next}
-              className="p-1.5 rounded hover:bg-gray-100 text-gray-700"
-            >
-              <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <polyline points="9 18 15 12 9 6" />
-              </svg>
-            </button>
-          </div>
-
-          <div className="grid grid-cols-7 gap-1 mb-1">
-            {weekdays.map((wd) => (
-              <div key={wd} className="text-center text-[10px] font-semibold text-gray-500 uppercase tracking-wider py-1" lang={lang}>
-                {wd}
-              </div>
-            ))}
-          </div>
-
-          <div className="grid grid-cols-7 gap-1">
-            {cells.map((d, i) => (
-              <button
-                key={i}
-                type="button"
-                disabled={!d}
-                onClick={() => d && handleSelect(d)}
-                className={`
-                  h-8 w-8 text-xs rounded-full flex items-center justify-center transition-colors mx-auto
-                  ${!d ? 'invisible' : ''}
-                  ${isSelected(d) ? 'bg-primary text-white font-bold' : ''}
-                  ${!isSelected(d) && isToday(d) ? 'border border-primary text-primary font-semibold' : ''}
-                  ${!isSelected(d) && !isToday(d) ? 'text-gray-700 hover:bg-gray-100' : ''}
-                `}
-              >
-                {d?.getDate()}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
+      {open && calendar}
     </div>
   )
 }
