@@ -1,6 +1,6 @@
 import clsx from 'clsx'
 import React from 'react'
-import Image from 'next/image'
+import NextImage from 'next/image'
 import logoSrc from '@/assets/logo2.svg'
 import type { Media } from '@/payload-types'
 
@@ -21,7 +21,7 @@ export const Logo = (props: Props) => {
     const logoUrl = logo.url
     if (logoUrl) {
       return (
-        <img
+        <NextImage
           src={logoUrl}
           alt={logo.alt || 'Navoi International Airport'}
           width={logo.width || 193}
@@ -34,7 +34,7 @@ export const Logo = (props: Props) => {
   }
 
   return (
-    <Image
+    <NextImage
       src={logoSrc}
       alt="Navoi International Airports"
       width={193}
