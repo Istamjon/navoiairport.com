@@ -34,7 +34,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <link href="/favicon.svg" rel="icon" type="image/svg+xml" />
       </head>
       <body className=" md:pt-0 lg:pt-24 pt-15">
-        <Providers>
+        <Providers initialLocale={locale}>
           <Header />
           {children}
           <Footer />

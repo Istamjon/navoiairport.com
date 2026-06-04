@@ -4,8 +4,10 @@ import React, { useEffect, useState, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Search, X } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import { useLocale } from '@/providers/Locale/useLocale'
+import type { LocaleCode } from '@/providers/Locale/config'
 
-const DICTIONARY = {
+const DICTIONARY: Record<LocaleCode, { placeholder: string; close: string }> = {
   uz: {
     placeholder: 'Nimani qidiryapsiz? Yorliq, xabar yoki parvozni kiriting...',
     close: 'Yopish',
@@ -30,7 +32,7 @@ interface SearchModalProps {
 }
 
 export const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose }) => {
-  const [lang, setLang] = useState<keyof typeof DICTIONARY>('uz')
+  const { locale } = useLocale()
   const [mounted, setMounted] = useState(false)
   const [value, setValue] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
@@ -38,15 +40,6 @@ export const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose }) => 
 
   useEffect(() => {
     setMounted(true)
-    const match = document.cookie.match(/(^| )payload-locale=([^;]+)/)
-    if (match && match[2] && Object.keys(DICTIONARY).includes(match[2])) {
-      setLang(match[2] as keyof typeof DICTIONARY)
-    } else {
-      const htmlLang = document.documentElement.lang
-      if (htmlLang && Object.keys(DICTIONARY).includes(htmlLang)) {
-        setLang(htmlLang as keyof typeof DICTIONARY)
-      }
-    }
   }, [])
 
   useEffect(() => {
@@ -70,7 +63,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose }) => 
     }
   }
 
-  const t = DICTIONARY[lang]
+  const t = DICTIONARY[locale]
 
   return (
     <AnimatePresence>

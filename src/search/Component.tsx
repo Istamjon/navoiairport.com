@@ -6,8 +6,10 @@ import { useDebounce } from '@/utilities/useDebounce'
 import { useRouter } from 'next/navigation'
 import { Search as SearchIcon } from 'lucide-react'
 import { motion } from 'framer-motion'
+import { useLocale } from '@/providers/Locale/useLocale'
+import type { LocaleCode } from '@/providers/Locale/config'
 
-const DICTIONARY = {
+const DICTIONARY: Record<LocaleCode, { placeholder: string }> = {
   uz: { placeholder: 'Nimani qidiryapsiz? Yorliq, xabar yoki parvozni kiriting...' },
   ru: { placeholder: 'Что вы ищете? Введите тег, новость или рейс...' },
   en: { placeholder: 'What are you looking for? Enter a tag, news or flight...' },
@@ -16,7 +18,7 @@ const DICTIONARY = {
 
 export const Search: React.FC = () => {
   const [value, setValue] = useState('')
-  const [lang, setLang] = useState<keyof typeof DICTIONARY>('uz')
+  const { locale } = useLocale()
   const [mounted, setMounted] = useState(false)
   const router = useRouter()
 
@@ -24,22 +26,13 @@ export const Search: React.FC = () => {
 
   useEffect(() => {
     setMounted(true)
-    const match = document.cookie.match(/(^| )payload-locale=([^;]+)/)
-    if (match && match[2] && Object.keys(DICTIONARY).includes(match[2])) {
-      setLang(match[2] as keyof typeof DICTIONARY)
-    } else {
-      const htmlLang = document.documentElement.lang
-      if (htmlLang && Object.keys(DICTIONARY).includes(htmlLang)) {
-        setLang(htmlLang as keyof typeof DICTIONARY)
-      }
-    }
   }, [])
 
   useEffect(() => {
     router.push(`/search${debouncedValue ? `?q=${debouncedValue}` : ''}`)
   }, [debouncedValue, router])
 
-  const t = DICTIONARY[lang]
+  const t = DICTIONARY[locale]
 
   return (
     <motion.div

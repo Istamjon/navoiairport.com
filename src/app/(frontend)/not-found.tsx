@@ -4,8 +4,10 @@ import Link from 'next/link'
 import React, { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { Plane, Home, AlertCircle } from 'lucide-react'
+import { useLocale } from '@/providers/Locale/useLocale'
+import type { LocaleCode } from '@/providers/Locale/config'
 
-const DICTIONARY = {
+const DICTIONARY: Record<LocaleCode, { title: string; desc: string; btn: string }> = {
   uz: {
     title: 'Kechirasiz, sahifa topilmadi',
     desc: "Siz izlayotgan sahifa o'z manzilini o'zgartirgan yoki butunlay olib tashlangan bo'lishi mumkin. Quyidagi tugma orqali bosh sahifaga qaytishingiz mumkin.",
@@ -29,24 +31,14 @@ const DICTIONARY = {
 }
 
 export default function NotFound() {
-  const [lang, setLang] = useState<keyof typeof DICTIONARY>('uz')
+  const { locale } = useLocale()
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
     setMounted(true)
-    const match = document.cookie.match(/(^| )payload-locale=([^;]+)/)
-    if (match && match[2] && Object.keys(DICTIONARY).includes(match[2])) {
-      setLang(match[2] as keyof typeof DICTIONARY)
-    } else {
-      // Fallback to html lang attribute if available
-      const htmlLang = document.documentElement.lang
-      if (htmlLang && Object.keys(DICTIONARY).includes(htmlLang)) {
-        setLang(htmlLang as keyof typeof DICTIONARY)
-      }
-    }
   }, [])
 
-  const t = DICTIONARY[lang]
+  const t = DICTIONARY[locale]
 
   return (
     <div className="relative min-h-[85vh] w-full flex items-center justify-center overflow-hidden bg-[#f5f5f5] dark:bg-background">

@@ -2,9 +2,10 @@
 
 import React from 'react'
 import { Plane } from 'lucide-react'
-import { getLocaleFromCookie } from './getLocale'
+import { useLocale } from '@/providers/Locale/useLocale'
+import type { LocaleCode } from '@/providers/Locale/config'
 
-const LABELS: Record<string, string> = {
+const LABELS: Record<LocaleCode, string> = {
   uz: 'Parvozlar xaritasi',
   ru: 'Карта рейсов',
   en: 'Flight Map',
@@ -17,8 +18,8 @@ interface StickyTriggerProps {
 }
 
 export const StickyTrigger = ({ onClick, isOpen }: StickyTriggerProps) => {
-  const [label, setLabel] = React.useState('Parvozlar xaritasi')
-  const [displayLabel, setDisplayLabel] = React.useState('Parvozlar xaritasi')
+  const { locale } = useLocale()
+  const [displayLabel, setDisplayLabel] = React.useState(LABELS.uz)
   const [labelOpacity, setLabelOpacity] = React.useState(1)
   const [hovered, setHovered] = React.useState(false)
   const [isMobile, setIsMobile] = React.useState(false)
@@ -31,33 +32,17 @@ export const StickyTrigger = ({ onClick, isOpen }: StickyTriggerProps) => {
     return () => mq.removeEventListener('change', handler as (e: MediaQueryListEvent) => void)
   }, [])
 
-  React.useEffect(() => {
-    const locale = getLocaleFromCookie()
-    const newLabel = LABELS[locale] ?? LABELS['uz']
-    setLabel(newLabel)
-    setDisplayLabel(newLabel)
-  }, [])
-
   // Slow fade whenever label changes (language switch)
   React.useEffect(() => {
-    if (displayLabel === label) return
+    const newLabel = LABELS[locale] ?? LABELS.uz
+    if (newLabel === displayLabel) return
     setLabelOpacity(0)
     const timer = setTimeout(() => {
-      setDisplayLabel(label)
+      setDisplayLabel(newLabel)
       setLabelOpacity(1)
     }, 400)
     return () => clearTimeout(timer)
-  }, [label, displayLabel])
-
-  // Poll for locale changes (e.g., when user switches language in the header)
-  React.useEffect(() => {
-    const interval = setInterval(() => {
-      const locale = getLocaleFromCookie()
-      const newLabel = LABELS[locale] ?? LABELS['uz']
-      if (newLabel !== label) setLabel(newLabel)
-    }, 800)
-    return () => clearInterval(interval)
-  }, [label])
+  }, [locale, displayLabel])
 
   return (
     <button

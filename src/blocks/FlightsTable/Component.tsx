@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { cn } from '@/utilities/ui'
-import { getLocaleFromCookie } from '@/components/FlightMap/getLocale'
+import { useLocale } from '@/providers/Locale/useLocale'
 import {
   Plane,
   Clock,
@@ -591,20 +591,11 @@ export const FlightsTableBlock: React.FC<Props> = ({
   tableHeaders,
   airportIata = 'NVI',
   refreshInterval = 120,
-  locale = 'uz',
+  locale: initialLocale = 'uz',
 }) => {
-  const [currentLocale, setCurrentLocale] = useState<LocaleCode>(locale as LocaleCode)
-
-  useEffect(() => {
-    setCurrentLocale((getLocaleFromCookie() as LocaleCode) || (locale as LocaleCode))
-    const interval = setInterval(() => {
-      const newLocale = getLocaleFromCookie() as LocaleCode
-      if (newLocale && newLocale !== currentLocale) {
-        setCurrentLocale(newLocale)
-      }
-    }, 800)
-    return () => clearInterval(interval)
-  }, [currentLocale, locale])
+  const { locale: contextLocale } = useLocale()
+  const currentLocale: LocaleCode =
+    (contextLocale as LocaleCode) || ((initialLocale ?? 'uz') as LocaleCode)
 
   const lang = DICT[currentLocale] || DICT['uz']
   const [activeTab, setActiveTab] = useState<'departures' | 'arrivals'>('departures')

@@ -4,9 +4,10 @@ import React, { useEffect, useState, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, MapPin, Phone } from 'lucide-react'
 import MapChart from './MapChart'
-import { getLocaleFromCookie } from './getLocale'
+import { useLocale } from '@/providers/Locale/useLocale'
+import type { LocaleCode } from '@/providers/Locale/config'
 
-const STRINGS: Record<string, Record<string, string>> = {
+const STRINGS: Record<LocaleCode, Record<string, string>> = {
   uz: {
     title: 'Navoiy Xalqaro Aeroporti Qatnovlari',
     airportName: 'Navoiy Xalqaro Aeroporti',
@@ -38,31 +39,17 @@ const STRINGS: Record<string, Record<string, string>> = {
 }
 
 export const MapDrawer = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
-  const [locale, setLocale] = useState('uz')
+  const { locale } = useLocale()
   const [textVisible, setTextVisible] = useState(true)
 
-  // Initial locale from cookie
+  // Fade out → swap → fade in on locale change
   useEffect(() => {
-    setLocale(getLocaleFromCookie())
-  }, [])
-
-  // Poll for locale changes
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const newLocale = getLocaleFromCookie()
-      if (newLocale !== locale) {
-        // Fade out → swap → fade in
-        setTextVisible(false)
-        setTimeout(() => {
-          setLocale(newLocale)
-          setTextVisible(true)
-        }, 350)
-      }
-    }, 800)
-    return () => clearInterval(interval)
+    setTextVisible(false)
+    const timer = setTimeout(() => setTextVisible(true), 350)
+    return () => clearTimeout(timer)
   }, [locale])
 
-  const t = STRINGS[locale] ?? STRINGS['uz']
+  const t = STRINGS[locale] ?? STRINGS.uz
 
   // Lock body scroll when drawer is open
   useEffect(() => {

@@ -3,6 +3,7 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useHeaderTheme } from '@/providers/HeaderTheme'
+import { useLocale } from '@/providers/Locale/useLocale'
 import type { Media as MediaType } from '@/payload-types'
 import { Media } from '@/components/Media'
 import RichText from '@/components/RichText'
@@ -152,10 +153,10 @@ const parseYMD = (s: string): Date | null => {
 }
 
 const DatePicker: React.FC<{
-  lang: string
   date: string
   onChange: (val: string) => void
-}> = ({ lang, date, onChange }) => {
+}> = ({ date, onChange }) => {
+  const { locale: lang } = useLocale()
   const [open, setOpen] = useState(false)
   const [focused, setFocused] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
@@ -244,6 +245,13 @@ const DatePicker: React.FC<{
 
   const nav = NAV_LABELS[lang] || NAV_LABELS.uz
   const weekdays = WEEKDAY_LABELS[lang] || WEEKDAY_LABELS.uz
+  const MOBILE_LABELS: Record<string, { cancel: string; today: string }> = {
+    uz: { cancel: 'Bekor qilish', today: 'Bugun' },
+    ru: { cancel: 'Отмена', today: 'Сегодня' },
+    en: { cancel: 'Cancel', today: 'Today' },
+    zh: { cancel: '取消', today: '今天' },
+  }
+  const mobileLabels = MOBILE_LABELS[lang] || MOBILE_LABELS.uz
 
   const displayDate = date
     ? new Intl.DateTimeFormat(lang, DATE_FORMATS[lang] || DATE_FORMATS.uz).format(new Date(date + 'T00:00:00'))
@@ -373,14 +381,14 @@ const DatePicker: React.FC<{
             onClick={() => setOpen(false)}
             className="flex-1 h-11 rounded-md border border-gray-300 text-sm font-semibold text-gray-700 active:bg-gray-100"
           >
-            {lang === 'uz' ? 'Bekor qilish' : lang === 'ru' ? 'Отмена' : lang === 'zh' ? '取消' : 'Cancel'}
+            {mobileLabels.cancel}
           </button>
           <button
             type="button"
             onClick={goToday}
             className="flex-1 h-11 rounded-md border border-primary text-sm font-semibold text-primary active:bg-primary/10"
           >
-            {lang === 'uz' ? 'Bugun' : lang === 'ru' ? 'Сегодня' : lang === 'zh' ? '今天' : 'Today'}
+            {mobileLabels.today}
           </button>
         </div>
       )}
@@ -429,15 +437,10 @@ interface FlightSearchLabels {
 }
 
 const FlightSearchBlock: React.FC = () => {
+  const { locale } = useLocale()
   const [tab, setTab] = useState<'departure' | 'arrival'>('departure')
   const [destination, setDestination] = useState('')
   const [date, setDate] = useState('')
-  const [lang, setLang] = useState('uz')
-
-  useEffect(() => {
-    const match = document.cookie.match(/(^| )payload-locale=([^;]+)/)
-    if (match?.[2]) setLang(match[2])
-  }, [])
 
   // Mapping city names to IATA codes for booking URL
   const CITY_MAP: Record<string, string> = {
@@ -469,7 +472,7 @@ const FlightSearchBlock: React.FC = () => {
     }
   }
 
-  const t = getFlightLabels(lang)
+  const t = getFlightLabels(locale)
 
   return (
     <motion.div
@@ -568,7 +571,7 @@ const FlightSearchBlock: React.FC = () => {
           <label className="block text-[10px] font-semibold text-gray-500 tracking-widest uppercase mb-1.5">
             {t.dateLabel}
           </label>
-          <DatePicker lang={lang} date={date} onChange={setDate} />
+          <DatePicker date={date} onChange={setDate} />
         </motion.div>
 
         {/* Submit */}
