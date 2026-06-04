@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useHeaderTheme } from '@/providers/HeaderTheme'
 import type { Media as MediaType } from '@/payload-types'
 import { Media } from '@/components/Media'
@@ -78,7 +78,7 @@ const FLIGHT_DICT: Record<string, FlightSearchLabels> = {
 
 const getFlightLabels = (lang: string): FlightSearchLabels => FLIGHT_DICT[lang] || FLIGHT_DICT.uz
 
-// ─── Locale-aware Date Picker ──────────────────────────────────────────────────
+// ─── Locale-aware Custom Date Picker ───────────────────────────────────────────
 const DATE_FORMATS: Record<string, Intl.DateTimeFormatOptions> = {
   uz: { day: 'numeric', month: 'long', year: 'numeric' },
   ru: { day: 'numeric', month: 'long', year: 'numeric' },
@@ -93,68 +93,227 @@ const DATE_PLACEHOLDERS: Record<string, string> = {
   zh: '选择日期',
 }
 
+const WEEKDAY_LABELS: Record<string, string[]> = {
+  uz: ['Du', 'Se', 'Ch', 'Pa', 'Ju', 'Sh', 'Ya'],
+  ru: ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'],
+  en: ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'],
+  zh: ['一', '二', '三', '四', '五', '六', '日'],
+}
+
+const NAV_LABELS: Record<string, { prev: string; next: string; months: string[] }> = {
+  uz: {
+    prev: 'Oldingi oy',
+    next: 'Keyingi oy',
+    months: [
+      'Yanvar', 'Fevral', 'Mart', 'Aprel', 'May', 'Iyun',
+      'Iyul', 'Avgust', 'Sentabr', 'Oktabr', 'Noyabr', 'Dekabr',
+    ],
+  },
+  ru: {
+    prev: 'Предыдущий месяц',
+    next: 'Следующий месяц',
+    months: [
+      'Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
+      'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь',
+    ],
+  },
+  en: {
+    prev: 'Previous month',
+    next: 'Next month',
+    months: [
+      'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December',
+    ],
+  },
+  zh: {
+    prev: '上个月',
+    next: '下个月',
+    months: [
+      '一月', '二月', '三月', '四月', '五月', '六月',
+      '七月', '八月', '九月', '十月', '十一月', '十二月',
+    ],
+  },
+}
+
+const formatYMD = (d: Date): string => {
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${y}-${m}-${day}`
+}
+
+const parseYMD = (s: string): Date | null => {
+  if (!s) return null
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s)
+  if (!m) return null
+  const d = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]))
+  return isNaN(d.getTime()) ? null : d
+}
+
 const DatePicker: React.FC<{
   lang: string
   date: string
   onChange: (val: string) => void
 }> = ({ lang, date, onChange }) => {
-  const inputRef = useRef<HTMLInputElement>(null)
+  const [open, setOpen] = useState(false)
   const [focused, setFocused] = useState(false)
+  const containerRef = useRef<HTMLDivElement>(null)
+
+  const selected = parseYMD(date)
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+
+  const initialView = selected || today
+  const [viewYear, setViewYear] = useState(initialView.getFullYear())
+  const [viewMonth, setViewMonth] = useState(initialView.getMonth())
+
+  useEffect(() => {
+    if (selected) {
+      setViewYear(selected.getFullYear())
+      setViewMonth(selected.getMonth())
+    }
+  }, [date])
+
+  useEffect(() => {
+    if (!open) return
+    const handleClickOutside = (e: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [open])
+
+  const nav = NAV_LABELS[lang] || NAV_LABELS.uz
+  const weekdays = WEEKDAY_LABELS[lang] || WEEKDAY_LABELS.uz
 
   const displayDate = date
     ? new Intl.DateTimeFormat(lang, DATE_FORMATS[lang] || DATE_FORMATS.uz).format(new Date(date + 'T00:00:00'))
     : ''
 
-  const openPicker = useCallback(() => {
-    if (!inputRef.current) return
-    try {
-      inputRef.current.showPicker()
-    } catch {
-      inputRef.current.focus()
-      inputRef.current.click()
-      // On some mobile browsers, after click() the picker opens automatically,
-      // on others we try dispatching a mousedown event as a last resort
-      try {
-        inputRef.current.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }))
-      } catch {
-        // ignore
-      }
+  const goPrev = () => {
+    if (viewMonth === 0) {
+      setViewMonth(11)
+      setViewYear(viewYear - 1)
+    } else {
+      setViewMonth(viewMonth - 1)
     }
-  }, [])
+  }
+  const goNext = () => {
+    if (viewMonth === 11) {
+      setViewMonth(0)
+      setViewYear(viewYear + 1)
+    } else {
+      setViewMonth(viewMonth + 1)
+    }
+  }
+
+  const firstDay = new Date(viewYear, viewMonth, 1)
+  // Convert Sunday=0 to Monday=0 (start of week)
+  const startOffset = (firstDay.getDay() + 6) % 7
+  const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate()
+  const cells: (Date | null)[] = []
+  for (let i = 0; i < startOffset; i++) cells.push(null)
+  for (let d = 1; d <= daysInMonth; d++) cells.push(new Date(viewYear, viewMonth, d))
+    while (cells.length % 7 !== 0) cells.push(null)
+
+  const handleSelect = (d: Date) => {
+    onChange(formatYMD(d))
+    setOpen(false)
+  }
+
+  const isSelected = (d: Date | null) =>
+    d && selected && d.getFullYear() === selected.getFullYear() && d.getMonth() === selected.getMonth() && d.getDate() === selected.getDate()
+
+  const isToday = (d: Date | null) =>
+    d && d.getFullYear() === today.getFullYear() && d.getMonth() === today.getMonth() && d.getDate() === today.getDate()
 
   return (
-    <div className="relative">
+    <div ref={containerRef} className="relative">
       <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-gray-400 pointer-events-none z-10" />
       <div
-        onClick={openPicker}
-        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') openPicker() }}
+        onClick={() => setOpen((o) => !o)}
+        onFocus={() => setFocused(true)}
+        onBlur={() => setFocused(false)}
         tabIndex={0}
         role="button"
+        aria-haspopup="dialog"
+        aria-expanded={open}
         aria-label={DATE_PLACEHOLDERS[lang] || DATE_PLACEHOLDERS.uz}
         lang={lang}
         className={`
           rounded-md w-full h-11 pl-9 pr-3 text-sm flex items-center
-          transition-colors cursor-pointer select-none
+          transition-colors cursor-pointer select-none outline-none
           ${displayDate ? 'text-primary' : 'text-gray-400'}
-          ${focused ? 'border-[#0a1628] ring-1 ring-[#0a1628]' : 'border-gray-400'}
-          border
+          ${focused || open ? 'border-[#0a1628] ring-1 ring-[#0a1628]' : 'border-gray-400'}
+          border bg-white
         `}
       >
         {displayDate || DATE_PLACEHOLDERS[lang] || DATE_PLACEHOLDERS.uz}
       </div>
-      <input
-        ref={inputRef}
-        type="date"
-        value={date}
-        onChange={(e) => onChange(e.target.value)}
-        lang={lang}
-        onFocus={() => setFocused(true)}
-        onBlur={() => setFocused(false)}
-        className="absolute inset-0 w-full h-full opacity-0"
-        style={{ zIndex: 20, pointerEvents: 'none' }}
-        readOnly
-        tabIndex={-1}
-      />
+
+      {open && (
+        <div
+          role="dialog"
+          aria-label={DATE_PLACEHOLDERS[lang] || DATE_PLACEHOLDERS.uz}
+          className="absolute top-full left-0 mt-2 z-50 bg-white rounded-md shadow-lg border border-gray-200 p-3 w-72"
+        >
+          <div className="flex items-center justify-between mb-2">
+            <button
+              type="button"
+              onClick={goPrev}
+              aria-label={nav.prev}
+              className="p-1.5 rounded hover:bg-gray-100 text-gray-700"
+            >
+              <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <polyline points="15 18 9 12 15 6" />
+              </svg>
+            </button>
+            <div className="text-sm font-semibold text-primary" lang={lang}>
+              {nav.months[viewMonth]} {viewYear}
+            </div>
+            <button
+              type="button"
+              onClick={goNext}
+              aria-label={nav.next}
+              className="p-1.5 rounded hover:bg-gray-100 text-gray-700"
+            >
+              <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <polyline points="9 18 15 12 9 6" />
+              </svg>
+            </button>
+          </div>
+
+          <div className="grid grid-cols-7 gap-1 mb-1">
+            {weekdays.map((wd) => (
+              <div key={wd} className="text-center text-[10px] font-semibold text-gray-500 uppercase tracking-wider py-1" lang={lang}>
+                {wd}
+              </div>
+            ))}
+          </div>
+
+          <div className="grid grid-cols-7 gap-1">
+            {cells.map((d, i) => (
+              <button
+                key={i}
+                type="button"
+                disabled={!d}
+                onClick={() => d && handleSelect(d)}
+                className={`
+                  h-8 w-8 text-xs rounded-full flex items-center justify-center transition-colors mx-auto
+                  ${!d ? 'invisible' : ''}
+                  ${isSelected(d) ? 'bg-primary text-white font-bold' : ''}
+                  ${!isSelected(d) && isToday(d) ? 'border border-primary text-primary font-semibold' : ''}
+                  ${!isSelected(d) && !isToday(d) ? 'text-gray-700 hover:bg-gray-100' : ''}
+                `}
+              >
+                {d?.getDate()}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   )
 }
