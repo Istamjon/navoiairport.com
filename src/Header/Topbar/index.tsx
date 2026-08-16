@@ -107,26 +107,33 @@ const WeatherInline: React.FC = () => {
   const [weather, setWeather] = useState<WeatherData | null>(null)
 
   useEffect(() => {
-    const API_KEY = process.env.NEXT_PUBLIC_OPENWEATHER_API_KEY
+    const rawKey = process.env.NEXT_PUBLIC_OPENWEATHER_API_KEY
+    const API_KEY =
+      rawKey && rawKey !== 'your_openweather_api_key_here' && rawKey.trim() !== ''
+        ? rawKey
+        : '6631e068ec042c8e867bfaf461ba7922'
+
     const fetchWeather = async () => {
       try {
-        if (!API_KEY || API_KEY === 'your_openweather_api_key_here') {
-          // Use fallback data if no valid API key
-          setWeather({ temp: 22, description: 'Qisman bulutli', windSpeed: 4, icon: '02d' })
-          return
-        }
         const res = await fetch(
-          `https://api.openweathermap.org/data/2.5/weather?lat=40.0998&lon=65.3792&appid=${API_KEY}&units=metric&lang=uz`,
+          `https://api.openweathermap.org/data/2.5/weather?id=1538229&appid=${API_KEY}&units=metric&lang=uz`,
+          { cache: 'no-store' }
         )
-        if (!res.ok) throw new Error('bad response')
+        if (!res.ok) {
+          console.warn(`Weather fetch status: ${res.status}`)
+          throw new Error(`Weather fetch failed with status ${res.status}`)
+        }
         const data = await res.json()
-        setWeather({
-          temp: Math.round(data.main.temp),
-          description: data.weather[0].description,
-          windSpeed: Math.round(data.wind.speed),
-          icon: data.weather[0].icon,
-        })
-      } catch {
+        if (data && data.main && data.weather && data.weather.length > 0) {
+          setWeather({
+            temp: Math.round(data.main.temp),
+            description: data.weather[0].description,
+            windSpeed: Math.round(data.wind?.speed || 0),
+            icon: data.weather[0].icon,
+          })
+        }
+      } catch (err) {
+        console.error("Failed to fetch weather:", err)
         setWeather({ temp: 22, description: 'Qisman bulutli', windSpeed: 4, icon: '02d' })
       }
     }

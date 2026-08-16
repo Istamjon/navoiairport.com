@@ -13,8 +13,7 @@ export async function Footer() {
     <footer className="mt-auto border-t-2 border-blue-300 bg-primary text-white">
       <div className="container py-8">
         <div className="flex flex-col md:flex-row md:justify-between gap-8 mb-8">
-          <Link className="flex items-center" href="/">
-          </Link>
+          <Link className="flex items-center" href="/"></Link>
         </div>
 
         <nav className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8 divide-x divide-white/20">
@@ -26,7 +25,7 @@ export async function Footer() {
 
       <div className="container border-t border-t-blue-300/50 py-4">
         <p className="text-left text-white/50 text-sm">
-          Navoi International Airopot Inc. &copy; {new Date().getFullYear()}
+          Navoi International Airport LLC &copy; {new Date().getFullYear()}
         </p>
       </div>
     </footer>

@@ -6,6 +6,7 @@ import React from 'react'
 import RichText from '@/components/RichText'
 
 import { CollectionArchive } from '@/components/CollectionArchive'
+import { getLocale } from '@/utilities/getLocale'
 
 type Props = ArchiveBlockProps & {
   id?: string | null
@@ -15,6 +16,8 @@ export const ArchiveBlock = async (props: Props) => {
   const { id, categories, introContent, limit: limitFromProps, populateBy, selectedDocs } = props
 
   const limit = limitFromProps || 3
+
+  const locale = await getLocale()
 
   let posts: Post[] = []
 
@@ -31,6 +34,7 @@ export const ArchiveBlock = async (props: Props) => {
       depth: 1,
       limit,
       overrideAccess: false,
+      locale,
       ...(flattenedCategories && flattenedCategories.length > 0
         ? {
             where: {
